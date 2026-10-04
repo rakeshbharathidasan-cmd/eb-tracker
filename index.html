@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>EB Tracker</title>
+<meta name="theme-color" content="#090c16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+<!-- ============ CONFIG: paste your Supabase project values here ============ -->
+<script>
+window.EB_CONFIG = {
+  SUPABASE_URL: "",       // e.g. "https://abcdefgh.supabase.co"
+  SUPABASE_ANON_KEY: ""   // Project Settings → API → anon / publishable key
+};
+// Leave both empty to run in DEMO mode (sample data, stored only on this device).
+</script>
+<!-- ========================================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+:root{
+  --bg:#090c16; --bg2:#0e1324; --card:rgba(19,25,45,.82); --card2:rgba(27,34,60,.9);
+  --line:rgba(150,165,255,.10); --line2:rgba(150,165,255,.18);
+  --text:#e6eaf6; --muted:#8a93b2; --dim:#5b6383;
+  --gf:#5ee6eb; --ff:#f28ad0; --vio:#a78bfa; --lime:#8fe3b0; --amber:#f2c27a; --orange:#f3a06f; --red:#ff7189; --mag:#d68bf5;
+  --r:20px; --num:'Space Grotesk',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:'Outfit',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;font-size:15px}
+body{min-height:100vh;background:
+  radial-gradient(900px 520px at -10% -15%,rgba(167,139,250,.13),transparent 60%),
+  radial-gradient(800px 480px at 115% 5%,rgba(94,230,235,.09),transparent 60%),
+  radial-gradient(700px 500px at 50% 120%,rgba(242,138,208,.07),transparent 60%),var(--bg);background-attachment:fixed}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,select{font:inherit;color:var(--text)}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.app{max-width:560px;margin:0 auto;padding:0 16px 130px}
+.muted{color:var(--muted)} .num{font-family:var(--num)}
+/* header */
+header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:calc(12px + env(safe-area-inset-top)) 0 12px;background:linear-gradient(var(--bg) 65%,rgba(9,12,22,0))}
+.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#1a1305;background:linear-gradient(140deg,#f6d38c,#f0a86a);box-shadow:0 0 22px -4px rgba(242,194,122,.55)}
+.logo svg.i{fill:#1a1305;stroke:none;width:22px;height:22px}
+.ttl{flex:1} .ttl h1{font-size:20px;font-weight:700;letter-spacing:.2px}
+.sub{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--dim)} .dot.on{background:var(--lime);box-shadow:0 0 8px var(--lime)}
+.icon-btn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+.demo-banner{font-size:12.5px;color:var(--amber);background:rgba(242,194,122,.07);border:1px solid rgba(242,194,122,.2);border-radius:12px;padding:8px 12px;margin-bottom:12px}
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px;position:relative;overflow:hidden}
+.card h3{font-size:15px;font-weight:600}
+.lbl{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:500}
+.sec-t{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 10px}
+.sec-t h2{font-size:16px;font-weight:600}
+/* hero */
+.hero{background:linear-gradient(160deg,rgba(167,139,250,.14),rgba(19,25,45,.85) 55%);border-color:rgba(167,139,250,.22);box-shadow:0 10px 40px -20px rgba(167,139,250,.5)}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start}
+.big{font-family:var(--num);font-size:44px;font-weight:700;line-height:1.05;margin:6px 0 2px;text-shadow:0 0 24px rgba(167,139,250,.35)}
+.big small{font-size:16px;color:var(--muted);font-weight:500;font-family:'Outfit'}
+.bolt-ring{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(242,194,122,.35);box-shadow:0 0 24px -6px rgba(242,194,122,.5),inset 0 0 18px -8px rgba(242,194,122,.6);color:var(--amber)}
+.bolt-ring svg.i{width:28px;height:28px;fill:var(--amber);stroke:none;filter:drop-shadow(0 0 6px rgba(242,194,122,.6))}
+.floor-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.ftile{text-align:left;border-radius:16px;padding:12px;background:rgba(9,12,22,.45);border:1px solid color-mix(in srgb,var(--c) 30%,transparent);box-shadow:inset 0 0 22px -14px var(--c)}
+.ftile .fname{font-size:12px;color:var(--c);font-weight:600;letter-spacing:.3px}
+.fu{font-family:var(--num);font-size:26px;font-weight:700;margin:4px 0}
+.fu small{font-size:12px;color:var(--muted)}
+.frow{display:flex;justify-content:space-between;font-size:13px}
+.frow .rate{color:var(--muted)}
+.by{font-size:11px;color:var(--dim);margin-top:6px}
+.ftile.empty{border-style:dashed;display:flex;flex-direction:column;justify-content:space-between;min-height:104px}
+.pending{display:flex;align-items:center;gap:6px;color:var(--c);font-weight:600;font-size:14px}
+/* cycle */
+.cyc{border-color:color-mix(in srgb,var(--c) 22%,transparent)}
+.cyc::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:.6}
+.cyc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.cyc-head .lbl{color:var(--c)}
+.cyc-dates{font-size:13px;color:var(--muted);margin-top:3px}
+.badge{font-size:12px;font-weight:600;padding:5px 10px;border-radius:99px;color:var(--b);background:color-mix(in srgb,var(--b) 12%,transparent);border:1px solid color-mix(in srgb,var(--b) 35%,transparent);white-space:nowrap}
+.pbar{position:relative;height:12px;border-radius:99px;background:rgba(255,255,255,.05);margin:16px 0 6px;overflow:visible}
+.pfill{position:absolute;inset:0 auto 0 0;width:0;border-radius:99px;background:linear-gradient(90deg,var(--lime),var(--amber) 70%,var(--red));background-size:var(--bs,100%) 100%;box-shadow:0 0 14px -2px color-mix(in srgb,var(--st) 70%,transparent);transition:width 1.1s cubic-bezier(.2,.9,.3,1)}
+.pproj{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--text);opacity:.55;border-radius:2px}
+.pproj::after{content:"proj";position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:9.5px;color:var(--muted)}
+.pscale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.kv{background:rgba(9,12,22,.4);border:1px solid var(--line);border-radius:14px;padding:10px}
+.kv .k{font-size:11px;color:var(--muted)} .kv .v{font-family:var(--num);font-size:19px;font-weight:600;margin:3px 0 1px}
+.kv .s{font-size:10.5px;color:var(--dim);line-height:1.25}
+.advice{margin-top:12px;font-size:13.5px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--st) 8%,transparent);border-left:3px solid var(--st);color:var(--text)}
+.cyc-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:12px;padding:11px 16px;font-weight:600;font-size:14px;border:1px solid var(--line2);background:var(--card2)}
+.btn.sm{padding:7px 11px;font-size:12.5px;border-radius:10px} .btn.sm svg.i{width:15px;height:15px}
+.btn.pri{background:linear-gradient(135deg,rgba(167,139,250,.9),rgba(242,138,208,.85));border:0;color:#120d1f;box-shadow:0 6px 24px -10px rgba(200,140,240,.8)}
+.btn.ghost{background:rgba(255,255,255,.03)}
+.btn.danger{color:var(--red);border-color:rgba(255,113,137,.3)}
+.btn.wide{width:100%;padding:14px;font-size:15px;margin-top:6px}
+.btn:disabled{opacity:.5}
+/* onboard */
+.onboard{display:flex;gap:14px;border-color:rgba(167,139,250,.3);background:linear-gradient(150deg,rgba(167,139,250,.12),var(--card))}
+.onboard p{font-size:13.5px;color:var(--muted);margin:6px 0 12px}
+.ob-ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(167,139,250,.15);color:var(--vio);flex:none}
+/* recent */
+.feed{display:flex;flex-direction:column}
+.fi{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.fi:last-child{border:0}
+.fi .chip{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent);flex:none}
+.fi .t{flex:1} .fi .t small{display:block;color:var(--dim);font-size:11.5px}
+.fi .u{font-family:var(--num);font-weight:600}
+/* nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:6px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(9,12,22,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line)}
+nav .inner{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);align-items:end}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;color:var(--dim);font-size:11px;font-weight:500;transition:color .2s}
+.tab.act{color:var(--text)} .tab.act svg.i{color:var(--vio);filter:drop-shadow(0 0 6px rgba(167,139,250,.7))}
+.fab-wrap{display:flex;justify-content:center}
+.fab{width:58px;height:58px;border-radius:50%;margin-top:-26px;display:grid;place-items:center;color:#120d1f;background:linear-gradient(140deg,#c4b2ff,#f2a0d8);box-shadow:0 0 0 5px var(--bg),0 8px 28px -6px rgba(200,140,240,.75)}
+.fab svg.i{width:26px;height:26px;stroke-width:2.6}
+/* sheet */
+#sheetRoot .backdrop{position:fixed;inset:0;z-index:40;background:rgba(3,5,12,.6);opacity:0;transition:opacity .25s;backdrop-filter:blur(3px)}
+#sheetRoot .sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-width:560px;margin:0 auto;max-height:92vh;overflow:auto;background:linear-gradient(180deg,#151b33,#0e1326);border:1px solid var(--line2);border-bottom:0;border-radius:24px 24px 0 0;padding:10px 18px calc(24px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.9,.3,1)}
+#sheetRoot.open .backdrop{opacity:1} #sheetRoot.open .sheet{transform:none}
+.sheet.full{max-height:100vh;height:100vh;border-radius:0}
+.grab{width:42px;height:4px;border-radius:4px;background:var(--line2);margin:0 auto 10px}
+.sheet .x{position:absolute;right:12px;top:12px;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--muted);background:rgba(255,255,255,.04)}
+.sheet h2{font-size:19px;margin:6px 0 14px;padding-right:40px}
+.sheet h4{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:20px 0 8px;font-weight:600}
+.fld{display:block;margin-bottom:12px}
+.fld>span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.fld input,.fld select{width:100%;padding:12px 14px;border-radius:12px;background:rgba(9,12,22,.6);border:1px solid var(--line2);outline:none;color-scheme:dark}
+.fld input:focus{border-color:rgba(167,139,250,.6);box-shadow:0 0 0 3px rgba(167,139,250,.15)}
+.fld.big input{font-family:var(--num);font-size:28px;font-weight:600;padding:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;gap:6px;padding:4px;border-radius:14px;background:rgba(9,12,22,.6);border:1px solid var(--line);margin-bottom:12px}
+.seg button{flex:1;padding:10px 8px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--muted);transition:all .2s}
+.seg button.on{color:var(--text);background:color-mix(in srgb,var(--c,#a78bfa) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c,#a78bfa) 45%,transparent)}
+.seg.small button{padding:8px 6px;font-size:12.5px}
+.hint{font-size:12.5px;color:var(--muted);margin:-4px 0 12px}
+.hint b{color:var(--text);font-family:var(--num)}
+.preview:empty{display:none}
+.pv{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:14px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.22);margin-bottom:10px}
+.pv-u{font-family:var(--num);font-size:24px;font-weight:700} .pv-u small{font-size:12px;color:var(--muted)}
+.pv-c{text-align:right} .pv-c>div:first-child{font-family:var(--num);font-size:18px;font-weight:600;color:var(--amber)}
+.pv .muted{font-size:11.5px}
+.err{font-size:13px;color:var(--red);background:rgba(255,113,137,.08);border:1px solid rgba(255,113,137,.25);border-radius:12px;padding:9px 12px;margin-bottom:10px}
+.warn{font-size:12.5px;color:var(--amber);background:rgba(242,194,122,.07);border:1px solid rgba(242,194,122,.22);border-radius:12px;padding:9px 12px;margin:4px 0 6px}
+.info{font-size:12.5px;color:var(--muted);background:rgba(94,230,235,.05);border:1px solid rgba(94,230,235,.16);border-radius:12px;padding:9px 12px;margin:4px 0 12px;line-height:1.45}
+.info b{color:var(--text)}
+.chk{display:flex;gap:9px;align-items:flex-start;font-size:13px;margin:0 0 10px;color:var(--muted)}
+.chk input{margin-top:3px;accent-color:#a78bfa}
+/* day sheet */
+.drow{border-radius:14px;padding:12px;margin-bottom:10px;background:rgba(9,12,22,.45);border:1px solid color-mix(in srgb,var(--c) 28%,transparent)}
+.drow .dh{display:flex;justify-content:space-between;align-items:center}
+.drow .dh b{color:var(--c)} .drow .dh span{font-family:var(--num);font-size:20px;font-weight:700}
+.dmeta{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.45}
+.dnote{font-size:13px;margin-top:6px;font-style:italic}
+.dact{display:flex;gap:8px;margin-top:10px}
+.drow.empty{display:flex;align-items:center;justify-content:space-between;gap:8px;border-style:dashed}
+/* calendar */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-nav h2{font-size:18px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-wd{font-size:11px;color:var(--dim);text-align:center;padding:4px 0}
+.cell{aspect-ratio:1/1.12;border-radius:12px;padding:5px 4px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:rgba(255,255,255,.025);border:1px solid var(--line);position:relative;font-size:11px}
+.cell.fut{opacity:.35;pointer-events:none}
+.cell.today{border-color:rgba(167,139,250,.75);box-shadow:0 0 12px -3px rgba(167,139,250,.6)}
+.cell .dn{color:var(--muted);font-size:11px;display:flex;align-items:center;gap:2px}
+.cell .du{font-family:var(--num);font-weight:700;font-size:13px;color:var(--text)}
+.cell .dots{display:flex;gap:3px}
+.cell .dots i{width:5px;height:5px;border-radius:50%;border:1px solid var(--c)}
+.cell .dots i.on{background:var(--c);box-shadow:0 0 5px var(--c)}
+.cell .cs{position:absolute;top:2px;right:3px;font-style:normal;font-size:9px;color:var(--amber)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip-btn{padding:7px 13px;border-radius:99px;font-size:13px;font-weight:600;color:var(--muted);border:1px solid var(--line2);background:rgba(255,255,255,.02)}
+.chip-btn.on{color:var(--text);border-color:color-mix(in srgb,var(--c,#a78bfa) 60%,transparent);background:color-mix(in srgb,var(--c,#a78bfa) 14%,transparent);box-shadow:0 0 14px -6px var(--c,#a78bfa)}
+.mstat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.mstat .kv .v{font-size:16px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:12px}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+/* gauge */
+.gauge-card{padding:10px 10px 16px;background:radial-gradient(420px 260px at 50% 55%,rgba(167,139,250,.10),transparent 70%),var(--card)}
+.gauge-card svg{width:100%;display:block}
+.needle{transition:transform 1.4s cubic-bezier(.25,1.25,.45,1);transform-box:view-box;transform-origin:170px 170px}
+.gl{font-family:var(--num);font-size:11px;fill:#8a93b2}
+.gl.th{fill:#ff7189;font-weight:700;font-size:12.5px}
+.zones{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:0 6px}
+.zc{font-size:11.5px;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.zc i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+.gchips{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px;padding:0 6px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);text-align:right;font-weight:600;padding:6px 6px;border-bottom:1px solid var(--line2)}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl td{padding:8px 6px;text-align:right;border-bottom:1px solid var(--line);font-family:var(--num)}
+.tbl td:first-child{font-family:'Outfit',system-ui,sans-serif}
+.tbl tr.dim td{color:var(--dim)}
+.tbl tr.tot td{font-weight:700;border-bottom:0;padding-top:10px}
+.tbl tr.hl td{background:rgba(167,139,250,.08)}
+.sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.plan{font-size:12.5px;padding:8px 12px;border-radius:12px;margin-bottom:10px}
+.plan.low{color:var(--lime);background:rgba(143,227,176,.07);border:1px solid rgba(143,227,176,.2)}
+.plan.high{color:var(--red);background:rgba(255,113,137,.07);border:1px solid rgba(255,113,137,.22)}
+input[type=range]{width:100%;accent-color:#a78bfa;margin:10px 0}
+.wi{display:flex;justify-content:space-between;align-items:baseline}
+.wi .num{font-size:22px;font-weight:700}
+/* stats */
+.kgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.chart-box{position:relative;height:220px}
+.chart-box.sm{height:200px}
+.ins{display:flex;flex-direction:column;gap:8px}
+.ins div{font-size:13.5px;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid var(--line);line-height:1.4}
+.ins b{color:var(--amber);font-weight:600}
+/* report */
+.report{background:rgba(9,12,22,.5);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.rp-head{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.rp-head h3{font-size:17px}
+.report h5{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:16px 0 6px}
+.report ul{padding-left:18px;font-size:13px;line-height:1.6}
+.fine{font-size:11px;color:var(--dim);margin-top:12px;line-height:1.4}
+.rbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+/* settings */
+.trow{display:grid;grid-template-columns:1fr 1fr 34px;gap:8px;margin-bottom:6px;align-items:center}
+.trow input{padding:9px 10px;border-radius:10px;background:rgba(9,12,22,.6);border:1px solid var(--line2);width:100%}
+.trow .rm{color:var(--dim);font-size:18px}
+.hist{font-size:13px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(9,12,22,.4)}
+.hist small{display:block;color:var(--dim);font-size:11.5px;margin-top:2px}
+/* toast */
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;width:min(92vw,420px);pointer-events:none}
+.tst{pointer-events:auto;display:flex;align-items:center;gap:10px;justify-content:space-between;padding:11px 14px;border-radius:14px;background:#1a2140;border:1px solid var(--line2);font-size:13.5px;box-shadow:0 10px 30px -10px rgba(0,0,0,.7);animation:tin .3s ease}
+.tst.ok{border-color:rgba(143,227,176,.35)} .tst.err{border-color:rgba(255,113,137,.4)}
+.tst button{color:var(--vio);font-weight:700;white-space:nowrap}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}}
+/* login */
+.login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login .card{width:100%;max-width:380px;padding:26px}
+.login .logo{width:56px;height:56px;margin-bottom:14px}
+.login h1{font-size:24px;margin-bottom:4px}
+.page-enter{animation:pe .35s ease}
+@keyframes pe{from{opacity:0;transform:translateY(6px)}}
+@media (max-width:380px){.grid3{grid-template-columns:repeat(2,1fr)}.big{font-size:38px}}
+@media print{
+  body{background:#fff!important}
+  body *{visibility:hidden}
+  #report,#report *{visibility:visible;color:#111!important;border-color:#ccc!important;background:transparent!important;box-shadow:none!important;text-shadow:none!important}
+  #report{position:absolute;left:0;top:0;width:100%;border:0}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="sheetRoot"></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* ================= constants ================= */
+const CFG = window.EB_CONFIG || {};
+const DEMO = !CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY;
+const FLOORS = ['GF','FF'];
+const FN = {GF:'Ground Floor', FF:'First Floor', ALL:'Whole House'};
+const FS = {GF:'GF', FF:'FF', ALL:'ALL'};
+const FC = {GF:'#5ee6eb', FF:'#f28ad0', ALL:'#a78bfa'};
+const ZC = ['#7fdcae','#c3e38c','#f2d07e','#f3a974','#ff8496','#ef6a86','#d68bf5','#a78bfa'];
+const TN2026 = { threshold:500,
+  low:[{upto:200,rate:0},{upto:400,rate:4.70},{upto:500,rate:6.30}],
+  high:[{upto:100,rate:0},{upto:400,rate:4.70},{upto:500,rate:6.30},{upto:600,rate:8.40},{upto:800,rate:9.45},{upto:1000,rate:10.50},{upto:null,rate:11.55}] };
+const DEFAULTS = { mode:'separate', cycleDays:60, fixedCharge:{GF:0,FF:0,ALL:0}, inputMode:'meter', tariff:TN2026 };
+const STAT = { safe:{label:'Safe',c:'#8fe3b0'}, watch:{label:'Watch',c:'#f2c27a'}, danger:{label:'Danger zone',c:'#ff7189'}, over:{label:'Over limit',c:'#ff7189'} };
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DOWL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+const svg = p => `<svg class="i" viewBox="0 0 24 24">${p}</svg>`;
+const I = {
+  bolt: svg('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'),
+  home: svg('<path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>'),
+  cal: svg('<rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>'),
+  gauge: svg('<path d="M4.5 18a9 9 0 1 1 15 0"/><path d="m12 13 4-5"/><circle cx="12" cy="13" r="1.4"/>'),
+  chart: svg('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'),
+  plus: svg('<path d="M12 5v14M5 12h14"/>'),
+  gear: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+  x: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
+  reset: svg('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'),
+  flag: svg('<path d="M4 22V4M4 4h12l-2 4 2 4H4"/>'),
+  left: svg('<path d="m15 18-6-6 6-6"/>'),
+  right: svg('<path d="m9 18 6-6-6-6"/>'),
+  print: svg('<path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/>'),
+  dl: svg('<path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/>'),
+  share: svg('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>'),
+  doc: svg('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'),
+};
+
+/* ================= utils ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const pad = n => String(n).padStart(2,'0');
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const addDays = (s,n) => { const d = parse(s); d.setDate(d.getDate()+n); return iso(d); };
+const diffDays = (a,b) => Math.round((parse(b) - parse(a)) / 86400000);
+const today = () => iso(new Date());
+const fmtU = n => (Math.round((+n||0)*10)/10).toLocaleString('en-IN',{maximumFractionDigits:1});
+const rs = (n,d=0) => '₹' + (+n||0).toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const niceDate = s => { const d = parse(s); return `${DOW[d.getDay()]}, ${d.getDate()} ${MON[d.getMonth()]}`; };
+const shortDate = s => { const d = parse(s); return `${d.getDate()} ${MON[d.getMonth()]}`; };
+const timeOnly = ts => ts ? new Date(ts).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}) : '';
+const fullTime = ts => ts ? new Date(ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}) : '';
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'id-'+Math.random().toString(36).slice(2)+Date.now());
+const topOf = s => (s.upto === null || s.upto === '' || s.upto === undefined) ? Infinity : +s.upto;
+
+/* ================= state ================= */
+let S = clone(DEFAULTS), readings = [], cycles = [], idx = new Map(), daily = {}, user = null, client = null, charts = [];
+const ui = { page:'home', calMonth:null, calFilter:'ALL', dial:null, bd:'now', whatIf:null, statRange:'30', rep:{type:'week',offset:0}, live:false };
+
+function mergeSettings(d){
+  const s = clone(DEFAULTS);
+  if (d) { Object.assign(s, d); s.fixedCharge = {...DEFAULTS.fixedCharge, ...(d.fixedCharge||{})}; s.tariff = d.tariff || clone(TN2026); }
+  return s;
+}
+
+/* ================= tariff engine ================= */
+function bill(u){
+  u = Math.max(0, +u||0);
+  const t = S.tariff, high = u > +t.threshold, tbl = high ? t.high : t.low;
+  let prev = 0, total = 0;
+  const parts = tbl.map(s => { const T = topOf(s); const n = Math.max(0, Math.min(u,T) - prev);
+    const p = {from:prev, to:T, units:n, rate:+s.rate, cost:n*(+s.rate)}; prev = T; total += p.cost; return p; });
+  return {total, parts, high};
+}
+function rateFor(u){
+  const t = S.tariff, tbl = u > +t.threshold ? t.high : t.low;
+  for (const s of tbl) if (u <= topOf(s)) return +s.rate;
+  return +tbl[tbl.length-1].rate;
+}
+
+/* ================= cycles & computation ================= */
+const groups = () => S.mode === 'combined' ? [{id:'ALL',floors:['GF','FF']}] : [{id:'GF',floors:['GF']},{id:'FF',floors:['FF']}];
+const groupOf = f => groups().find(g => g.floors.includes(f));
+const uOn = (f,d) => { const r = idx.get(f+'|'+d); return r ? +r.units : 0; };
+function cyclesOf(gid){
+  return cycles.filter(c => c.group_id === gid).sort((a,b) => a.start_date < b.start_date ? -1 : a.start_date > b.start_date ? 1 : (String(a.created_at) < String(b.created_at) ? -1 : 1));
+}
+function cycleAt(gid, d){
+  const cs = cyclesOf(gid); let i = -1;
+  for (let k=0; k<cs.length; k++) if (cs[k].start_date <= d) i = k;
+  if (i < 0) return null;
+  const rec = cs[i], next = cs[i+1]?.start_date || null;
+  return { rec, start:rec.start_date, estEnd:addDays(rec.start_date, S.cycleDays-1), next };
+}
+
+function recompute(){
+  idx = new Map(); readings.forEach(r => idx.set(r.floor+'|'+r.reading_date, r));
+  const T = today(); let st = T, en = T;
+  readings.forEach(r => { if (r.reading_date < st) st = r.reading_date; if (r.reading_date > en) en = r.reading_date; });
+  cycles.forEach(c => { if (c.start_date < st) st = c.start_date; });
+  daily = {}; for (let d=st; d<=en; d=addDays(d,1)) daily[d] = {};
+  for (const g of groups()){
+    let curId = null, cum = 0;
+    for (let d=st; d<=en; d=addDays(d,1)){
+      const cy = cycleAt(g.id, d);
+      if (!cy){ g.floors.forEach(f => daily[d][f] = {u:uOn(f,d), cost:0, rate:null, cum:null, has:idx.has(f+'|'+d), counted:false}); continue; }
+      if (cy.rec.id !== curId){ curId = cy.rec.id; cum = +cy.rec.opening_units || 0; }
+      const ok = d >= cy.rec.anchor_date;
+      const us = g.floors.map(f => ok ? uOn(f,d) : 0);
+      const gu = us.reduce((a,b)=>a+b,0), prev = cum; cum += gu;
+      const gc = bill(cum).total - bill(prev).total;
+      g.floors.forEach((f,i) => daily[d][f] = {u:uOn(f,d), cost: gu>0 ? gc*us[i]/gu : 0, rate:rateFor(cum), cum, has:idx.has(f+'|'+d), counted:ok});
+    }
+  }
+}
+
+function summary(g){
+  const T = today(), cy = cycleAt(g.id, T); if (!cy) return null;
+  const r = cy.rec, th = +S.tariff.threshold;
+  let logged = 0, last = null;
+  for (let d=r.anchor_date; d<=T; d=addDays(d,1)){
+    let any = false; for (const f of g.floors) if (idx.has(f+'|'+d)){ any = true; logged += uOn(f,d); }
+    if (any) last = d;
+  }
+  const opening = +r.opening_units || 0, used = opening + logged;
+  const lastDay = last || (opening > 0 ? addDays(r.anchor_date,-1) : null);
+  const span = lastDay ? diffDays(r.start_date, lastDay) + 1 : 0;
+  const avg = span > 0 ? used/span : 0;
+  const nextDay = last ? addDays(last,1) : r.anchor_date;
+  const daysLeft = Math.max(0, diffDays(nextDay, cy.estEnd) + 1);
+  const remaining = th - used;
+  const perDay = daysLeft > 0 ? Math.max(0,remaining)/daysLeft : 0;
+  const projected = used + avg*daysLeft;
+  const status = used > th ? 'over' : projected > th ? 'danger' : projected > th*.85 ? 'watch' : 'safe';
+  return { cy, r, opening, logged, used, last, avg, daysLeft, remaining, perDay, projected, th,
+    elapsed: diffDays(r.start_date,T)+1, overdue: T > cy.estEnd, status,
+    fixed: +(S.fixedCharge[g.id]||0), billNow: bill(used), billProj: bill(projected) };
+}
+
+/* ================= data layer ================= */
+let demo = null;
+const DEMO_KEY = 'ebt-demo-v2';
+function saveDemo(){ try { localStorage.setItem(DEMO_KEY, JSON.stringify(demo)); } catch(e){} }
+function loadDemo(){
+  try { demo = JSON.parse(localStorage.getItem(DEMO_KEY) || 'null'); } catch(e){ demo = null; }
+  if (!demo || !demo.readings) { demo = seedDemo(); saveDemo(); }
+}
+function seedDemo(){
+  const T = today(); let seed = 11; const rnd = () => (seed = (seed*9301+49297) % 233280) / 233280;
+  const at = (d,h) => { const x = parse(d); x.setHours(h, Math.floor(rnd()*59)); return x.toISOString(); };
+  const who = () => rnd() < .6 ? 'Rakesh' : 'Wife';
+  const R = [], C = [];
+  // Ground floor: previous cycle + fresh cycle 38 days ago (EB reading taken)
+  const gPrev = addDays(T,-98), gCur = addDays(T,-38); let m = 11960;
+  C.push({id:uid(),group_id:'GF',start_date:gPrev,opening_units:0,anchor_date:gPrev,anchor_readings:{GF:m},note:'EB reading',created_by_name:'Rakesh',created_at:at(gPrev,9)});
+  for (let d=gPrev; d<=T; d=addDays(d,1)){
+    if (d === gCur) C.push({id:uid(),group_id:'GF',start_date:gCur,opening_units:0,anchor_date:gCur,anchor_readings:{GF:+m.toFixed(1)},note:'EB reading',created_by_name:'Rakesh',created_at:at(gCur,9)});
+    const w = parse(d).getDay(); const u = Math.max(2, 6.4 + (w===0||w===6 ? 2.4 : 0) + (rnd()-.5)*2.8);
+    m += u; const t = at(d, 20); const n = who();
+    R.push({id:uid(),floor:'GF',reading_date:d,units:+u.toFixed(1),meter_reading:+m.toFixed(1),note:null,entered_by_name:n,updated_by_name:n,created_at:t,updated_at:t});
+  }
+  // First floor: joined mid-cycle (cycle began 50 days ago; app started 28 days ago with 96 units already used)
+  const fStart = addDays(T,-50), fAnch = addDays(T,-28); let fm = 7420;
+  C.push({id:uid(),group_id:'FF',start_date:fStart,opening_units:96,anchor_date:fAnch,anchor_readings:{FF:fm},note:'Joined mid-cycle',created_by_name:'Rakesh',created_at:at(fAnch,8)});
+  for (let d=fAnch; d<T; d=addDays(d,1)){
+    const w = parse(d).getDay(); const u = Math.max(1.5, 3.5 + (w===5||w===6 ? 1.5 : 0) + (rnd()-.5)*2);
+    fm += u; const t = at(d, 21); const n = who();
+    R.push({id:uid(),floor:'FF',reading_date:d,units:+u.toFixed(1),meter_reading:+fm.toFixed(1),note:null,entered_by_name:n,updated_by_name:n,created_at:t,updated_at:t});
+  }
+  return { readings:R, cycles:C, settings:clone(DEFAULTS), name:'Rakesh' };
+}
+
+async function fetchAll(t, order){
+  let out = [], from = 0;
+  for(;;){ const {data,error} = await client.from(t).select('*').order(order).range(from, from+999);
+    if (error) throw error; out = out.concat(data); if (data.length < 1000) break; from += 1000; }
+  return out;
+}
+const DB = {
+  async insert(t,row){
+    if (DEMO){ const now = new Date().toISOString(); const r = {id:uid(), created_at:now, updated_at:now, ...row}; demo[t].push(r); saveDemo(); return clone(r); }
+    const {data,error} = await client.from(t).insert(row).select().single(); if (error) throw error; return data;
+  },
+  async update(t,id,patch){
+    if (DEMO){ const r = demo[t].find(x => x.id === id); Object.assign(r, patch, {updated_at:new Date().toISOString()}); saveDemo(); return clone(r); }
+    const {data,error} = await client.from(t).update(patch).eq('id',id).select().single(); if (error) throw error; return data;
+  },
+  async remove(t,id){
+    if (DEMO){ demo[t] = demo[t].filter(x => x.id !== id); saveDemo(); return; }
+    const {error} = await client.from(t).delete().eq('id',id); if (error) throw error;
+  },
+  async saveSettings(data){
+    if (DEMO){ demo.settings = data; saveDemo(); return; }
+    const {error} = await client.from('app_settings').upsert({id:1, data, updated_by_name:user.name, updated_at:new Date().toISOString()}); if (error) throw error;
+  },
+  async reload(){
+    if (DEMO) return;
+    const [r,c,s] = await Promise.all([fetchAll('readings','reading_date'), fetchAll('cycles','start_date'), client.from('app_settings').select('*').eq('id',1).maybeSingle()]);
+    readings = r; cycles = c; if (s.data) S = mergeSettings(s.data.data);
+  }
+};
+function apply(t,row){ const arr = t==='readings' ? readings : cycles; const i = arr.findIndex(x => x.id === row.id); if (i>=0) arr[i] = row; else arr.push(row); if (t==='readings') idx.set(row.floor+'|'+row.reading_date, row); }
+function unapply(t,id){ const arr = t==='readings' ? readings : cycles; const i = arr.findIndex(x => x.id === id); if (i>=0) arr.splice(i,1); }
+
+/* ================= boot / auth ================= */
+async function boot(){
+  if (DEMO){ loadDemo(); user = {id:'demo', name:demo.name||'Rakesh', email:''}; S = mergeSettings(demo.settings); readings = clone(demo.readings); cycles = clone(demo.cycles); ui.live = true; start(); return; }
+  try { client = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY); }
+  catch(e){ $('#app').innerHTML = `<div class="login"><div class="card"><h1>Config error</h1><p class="muted">${esc(e.message)}</p></div></div>`; return; }
+  const {data:{session}} = await client.auth.getSession();
+  if (session) await signedIn(session.user); else showLogin();
+  client.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') showLogin(); });
+}
+function showLogin(msg=''){
+  $('#app').innerHTML = `<div class="login"><div class="card">
+    <div class="logo">${I.bolt}</div><h1>EB Tracker</h1><p class="muted" style="margin-bottom:18px">Sign in to your household account</p>
+    <label class="fld"><span>Email</span><input id="lEmail" type="email" autocomplete="email"></label>
+    <label class="fld"><span>Password</span><input id="lPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></label>
+    <div id="lErr">${msg?`<div class="err">${esc(msg)}</div>`:''}</div>
+    <button class="btn pri wide" id="lBtn" onclick="doLogin()">Sign in</button></div></div>`;
+}
+async function doLogin(){
+  const b = $('#lBtn'); b.disabled = true; b.textContent = 'Signing in…';
+  const {data,error} = await client.auth.signInWithPassword({email:$('#lEmail').value.trim(), password:$('#lPass').value});
+  if (error){ $('#lErr').innerHTML = `<div class="err">${esc(error.message)}</div>`; b.disabled = false; b.textContent = 'Sign in'; return; }
+  await signedIn(data.user);
+}
+async function signedIn(u){
+  user = {id:u.id, email:u.email, name:u.user_metadata?.name || u.email.split('@')[0]};
+  $('#app').innerHTML = `<div class="login"><div class="muted">Loading…</div></div>`;
+  try {
+    let {data:s, error:se} = await client.from('app_settings').select('*').eq('id',1).maybeSingle();
+    if (se) throw se;
+    if (!s){ const {error:ie} = await client.from('app_settings').insert({id:1, data:DEFAULTS, updated_by_name:user.name}); if (ie) throw ie; s = {data:DEFAULTS}; }
+    S = mergeSettings(s.data);
+    readings = await fetchAll('readings','reading_date'); cycles = await fetchAll('cycles','start_date');
+  } catch(e){
+    console.error(e);
+    showLogin(/row-level|permission|policy/i.test(e.message||'') ? `Signed in as ${u.email}, but this email isn't in the household_members list in Supabase.` : 'Could not load data: '+(e.message||e));
+    await client.auth.signOut(); return;
+  }
+  subscribe(); start();
+  if (!u.user_metadata?.name) setTimeout(() => toast('Set your display name in Settings','ok',{label:'Open',fn:openSettings}), 800);
+}
+function subscribe(){
+  const on = t => p => onRemote(t,p);
+  client.channel('eb-live')
+    .on('postgres_changes',{event:'*',schema:'public',table:'readings'}, on('readings'))
+    .on('postgres_changes',{event:'*',schema:'public',table:'cycles'}, on('cycles'))
+    .on('postgres_changes',{event:'*',schema:'public',table:'app_settings'}, on('app_settings'))
+    .subscribe(st => { ui.live = st === 'SUBSCRIBED'; const d = $('#liveDot'); if (d) d.classList.toggle('on', ui.live); });
+  document.addEventListener('visibilitychange', async () => { if (!document.hidden){ try { await DB.reload(); recompute(); render(); } catch(e){} } });
+}
+function onRemote(t,p){
+  if (t === 'app_settings'){ if (p.new?.data) S = mergeSettings(p.new.data); }
+  else if (p.eventType === 'DELETE') unapply(t, p.old.id);
+  else {
+    const known = (t==='readings'?readings:cycles).find(x => x.id === p.new.id);
+    apply(t, p.new);
+    const who = t==='readings' ? p.new.updated_by_name : p.new.created_by_name;
+    if (who && who !== user.name && (!known || known.updated_at !== p.new.updated_at))
+      toast(t==='readings' ? `${who} logged ${FN[p.new.floor]}: ${fmtU(p.new.units)} u` : `${who} set a new ${FN[p.new.group_id]} cycle`);
+  }
+  recompute(); render();
+}
+function start(){ recompute(); shell(); render();
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+
+/* ================= shell / routing ================= */
+function shell(){
+  $('#app').innerHTML = `<div class="app">
+  <header class="top"><div class="logo">${I.bolt}</div>
+    <div class="ttl"><h1>EB Tracker</h1><div class="sub"><span class="dot ${ui.live?'on':''}" id="liveDot"></span><span>${DEMO?'Demo mode':'Live'} · ${esc(user.name)}</span></div></div>
+    <button class="icon-btn" onclick="openSettings()" aria-label="Settings">${I.gear}</button></header>
+  ${DEMO?`<div class="demo-banner">Demo mode — sample data on this device only. Add your Supabase keys in index.html to go live.</div>`:''}
+  <main id="page"></main></div>
+  <nav class="tabs"><div class="inner">${tab('home','Home',I.home)}${tab('cal','Calendar',I.cal)}
+    <div class="fab-wrap"><button class="fab" onclick="openEntry()" aria-label="Log units">${I.plus}</button></div>
+    ${tab('meter','Meter',I.gauge)}${tab('stats','Stats',I.chart)}</div></nav>`;
+}
+const tab = (id,l,ic) => `<button class="tab ${ui.page===id?'act':''}" data-tab="${id}" onclick="go('${id}')">${ic}<span>${l}</span></button>`;
+function go(p){ ui.page = p; document.querySelectorAll('.tab').forEach(b => b.classList.toggle('act', b.dataset.tab === p)); render(true); window.scrollTo({top:0}); }
+function render(anim){
+  charts.forEach(c => c.destroy()); charts = [];
+  const el = $('#page'); if (!el) return;
+  ({home:renderHome, cal:renderCal, meter:renderMeter, stats:renderStats})[ui.page](el);
+  if (anim){ el.classList.remove('page-enter'); void el.offsetWidth; el.classList.add('page-enter'); }
+}
+const kv = (k,v,s='') => `<div class="kv"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+
+/* ================= HOME ================= */
+function renderHome(el){
+  const T = today(), sums = groups().map(g => ({g, s:summary(g)}));
+  let h = '';
+  sums.filter(x => !x.s).forEach(({g}) => h += `<div class="card onboard"><div class="ob-ic">${I.flag}</div><div>
+    <h3>Set up ${FN[g.id]}</h3><p>Tell the app where this billing cycle stands — a fresh EB reading (start from zero), or units already used if you're joining mid-cycle.</p>
+    <button class="btn pri" onclick="openCycle('${g.id}')">Set starting point</button></div></div>`);
+  const tf = FLOORS.map(f => ({f, x:daily[T]?.[f], r:idx.get(f+'|'+T)}));
+  const tot = tf.reduce((a,o) => a + (o.r ? +o.r.units : 0), 0), tc = tf.reduce((a,o) => a + (o.x?.cost||0), 0);
+  h += `<section class="card hero"><div class="hero-top"><div><div class="lbl">Today · ${niceDate(T)}</div>
+      <div class="big">${fmtU(tot)}<small> units</small></div><div class="muted">${rs(tc,2)} estimated cost today</div></div>
+      <div class="bolt-ring">${I.bolt}</div></div>
+    <div class="floor-row">${tf.map(floorTile).join('')}</div></section>`;
+  sums.filter(x => x.s).forEach(({g,s}) => h += cycleCard(g,s));
+  h += recentCard();
+  el.innerHTML = h;
+  requestAnimationFrame(() => document.querySelectorAll('.pfill').forEach(b => b.style.width = b.dataset.w + '%'));
+}
+function floorTile({f,x,r}){
+  if (!r) return `<button class="ftile empty" style="--c:${FC[f]}" onclick="openEntry({floor:'${f}'})"><div class="fname">${FN[f]}</div><div class="pending">${I.plus} Log today</div></button>`;
+  return `<button class="ftile" style="--c:${FC[f]}" onclick="openDay('${r.reading_date}')"><div class="fname">${FN[f]}</div>
+    <div class="fu">${fmtU(r.units)}<small> units</small></div>
+    <div class="frow"><span>${rs(x?.cost||0,2)}</span><span class="rate">${x?.rate!=null?'@ '+rs(x.rate,2)+'/u':'no cycle'}</span></div>
+    <div class="by">${esc(r.updated_by_name||r.entered_by_name||'')} · ${timeOnly(r.updated_at||r.created_at)}</div></button>`;
+}
+function cycleCard(g,s){
+  const st = STAT[s.status], pct = Math.min(100, s.used/s.th*100), pp = Math.min(100, s.projected/s.th*100);
+  const advice = s.used > s.th ? `Cycle is past ${s.th} units — the whole bill is on the higher slab table. Each extra unit now costs ${rs(rateFor(s.used+.01),2)}.`
+    : s.overdue ? `The estimated EB reading date (${shortDate(s.cy.estEnd)}) has passed. Once the assessor reads the meter, tap <b>New cycle / reset</b>.`
+    : !s.avg ? `Log a few days to see your pace and projection.`
+    : s.avg > s.perDay ? `Averaging <b>${fmtU(s.avg)}</b> u/day vs a safe budget of <b>${fmtU(s.perDay)}</b>. Cut ~${fmtU(s.avg-s.perDay)} u/day to stay under ${s.th}.`
+    : `On track — averaging <b>${fmtU(s.avg)}</b> u/day vs a safe budget of <b>${fmtU(s.perDay)}</b>.`;
+  return `<section class="card cyc" style="--c:${FC[g.id]};--st:${st.c}">
+    <div class="cyc-head"><div><div class="lbl">${FN[g.id]} · billing cycle</div>
+      <div class="cyc-dates">${shortDate(s.r.start_date)} → ~${shortDate(s.cy.estEnd)} · day ${s.elapsed} of ${S.cycleDays}</div></div>
+      <span class="badge" style="--b:${st.c}">${st.label}</span></div>
+    <div class="pbar"><div class="pfill" data-w="${pct}" style="--bs:${pct>0?10000/pct:100}%"></div>${s.avg?`<div class="pproj" style="left:calc(${pp}% - 1px)"></div>`:''}</div>
+    <div class="pscale"><span>0</span><span>${fmtU(s.used)} / ${s.th}</span><span>${s.th}</span></div>
+    <div class="grid3">
+      ${kv('Net units', fmtU(s.used), s.opening ? `incl. ${fmtU(s.opening)} carried in` : 'this cycle')}
+      ${kv('Energy cost', rs(s.billNow.total), `slab now ${rs(rateFor(s.used),2)}/u`)}
+      ${kv(s.remaining >= 0 ? 'Left to '+s.th : 'Over '+s.th+' by', fmtU(Math.abs(s.remaining)), 'units')}
+      ${kv('Safe per day', s.remaining > 0 && s.daysLeft ? fmtU(s.perDay) : '—', `units · ${s.daysLeft} days left`)}
+      ${kv('Avg per day', fmtU(s.avg), 'units')}
+      ${kv('Projected', fmtU(s.projected), `≈ ${rs(s.billProj.total + s.fixed)} bill`)}
+    </div>
+    <div class="advice">${advice}</div>
+    <div class="cyc-actions"><button class="btn ghost sm" onclick="ui.dial='${g.id}';go('meter')">${I.gauge} Dial & slabs</button>
+      <button class="btn ghost sm" onclick="openCycle('${g.id}')">${I.reset} New cycle / reset</button></div></section>`;
+}
+function recentCard(){
+  const ev = [...readings.map(r => ({ts:r.updated_at||r.created_at, r})), ...cycles.map(c => ({ts:c.created_at, c}))]
+    .sort((a,b) => String(b.ts).localeCompare(String(a.ts))).slice(0,6);
+  if (!ev.length) return '';
+  return `<div class="sec-t"><h2>Recent activity</h2></div><div class="card"><div class="feed">${ev.map(e => e.r
+    ? `<div class="fi" style="--c:${FC[e.r.floor]}" onclick="openDay('${e.r.reading_date}')"><div class="chip">${FS[e.r.floor]}</div>
+       <div class="t">${esc(e.r.updated_by_name||e.r.entered_by_name)} logged ${niceDate(e.r.reading_date)}<small>${fullTime(e.ts)}${e.r.note?' · '+esc(e.r.note):''}</small></div><div class="u">${fmtU(e.r.units)} u</div></div>`
+    : `<div class="fi" style="--c:var(--amber)"><div class="chip">${I.reset}</div>
+       <div class="t">${esc(e.c.created_by_name)} started ${FN[e.c.group_id]} cycle<small>${fullTime(e.ts)} · from ${shortDate(e.c.start_date)}${+e.c.opening_units?` · ${fmtU(e.c.opening_units)} u carried in`:''}</small></div></div>`).join('')}</div></div>`;
+}
+
+/* ================= ENTRY ================= */
+let em = null;
+function openEntry(o={}){
+  const date = o.date || today();
+  const floor = o.floor || FLOORS.find(f => !idx.has(f+'|'+date)) || 'GF';
+  const ex = idx.get(floor+'|'+date);
+  em = {date, floor, mode: ex ? (ex.meter_reading != null ? 'meter' : 'units') : S.inputMode, split:true};
+  sheet(`<h2>Log consumption</h2><div id="entryBody"></div>`);
+  renderEntry();
+}
+function prevMeter(floor, date){
+  let best = null;
+  for (const r of readings) if (r.floor === floor && r.meter_reading != null && r.reading_date < date && (!best || r.reading_date > best.reading_date)) best = r;
+  const cy = cycleAt(groupOf(floor).id, date), ar = cy?.rec.anchor_readings?.[floor];
+  if (cy && ar != null && ar !== '' && cy.rec.anchor_date <= date && (!best || best.reading_date < cy.rec.anchor_date))
+    return {date:cy.rec.anchor_date, value:+ar, isAnchor:true};
+  return best ? {date:best.reading_date, value:+best.meter_reading, isAnchor:false} : null;
+}
+function renderEntry(){
+  const {date, floor, mode} = em, ex = idx.get(floor+'|'+date);
+  const val = ex ? (mode === 'meter' ? (ex.meter_reading ?? '') : ex.units) : '';
+  const pm = mode === 'meter' ? prevMeter(floor, date) : null;
+  $('#entryBody').innerHTML = `
+    <div class="seg">${FLOORS.map(f => `<button class="${f===floor?'on':''}" style="--c:${FC[f]}" onclick="em.floor='${f}';renderEntry()">${FN[f]}${idx.has(f+'|'+date)?' ✓':''}</button>`).join('')}</div>
+    <label class="fld"><span>Date</span><input type="date" value="${date}" max="${today()}" onchange="if(this.value){em.date=this.value;renderEntry()}"></label>
+    <div class="seg small"><button class="${mode==='meter'?'on':''}" onclick="em.mode='meter';renderEntry()">Meter reading</button><button class="${mode==='units'?'on':''}" onclick="em.mode='units';renderEntry()">Units used today</button></div>
+    <label class="fld big"><span>${mode==='meter' ? 'Reading shown on the meter (kWh)' : 'Units consumed on this day'}</span>
+      <input id="eVal" type="number" inputmode="decimal" step="0.01" min="0" value="${val}" placeholder="0" oninput="entryPreview()"></label>
+    ${mode==='meter' ? `<div class="hint">${pm ? `Previous reading <b>${pm.value}</b> on ${shortDate(pm.date)}${pm.isAnchor?' (cycle starting reading)':''}` : 'No earlier meter reading for this floor. Add one via <b>New cycle / reset</b>, or switch to "Units used today".'}</div>` : ''}
+    <div id="ePrev" class="preview"></div>
+    <label class="fld"><span>Note (optional)</span><input id="eNote" value="${esc(ex?.note||'')}" placeholder="e.g. guests over, AC all night"></label>
+    ${ex ? `<div class="warn">Already logged by ${esc(ex.updated_by_name||ex.entered_by_name)} · ${fullTime(ex.updated_at||ex.created_at)}. Saving will update it.</div>` : ''}
+    <button class="btn pri wide" id="eSave" onclick="saveEntry()">${ex ? 'Update entry' : 'Save entry'}</button>`;
+  entryPreview();
+  setTimeout(() => { const i = $('#eVal'); if (i && !i.value) i.focus(); }, 320);
+}
+function computeEntry(){
+  const v = parseFloat($('#eVal')?.value); if (isNaN(v)) return null;
+  const {date, floor, mode} = em;
+  if (v < 0) return {err:'Value cannot be negative.'};
+  if (mode === 'units') return {units:v, meter:null, missing:[]};
+  const pm = prevMeter(floor, date);
+  if (!pm) return {err:'Need an earlier meter reading for this floor. Switch to "Units used today", or set a starting reading via New cycle / reset.'};
+  const diff = v - pm.value; if (diff < 0) return {err:`Reading is lower than the previous one (${pm.value}).`};
+  const first = pm.isAnchor ? pm.date : addDays(pm.date, 1);
+  let between = 0; const missing = [];
+  for (let d=first; d<date; d=addDays(d,1)){ if (idx.has(floor+'|'+d)) between += uOn(floor,d); else missing.push(d); }
+  const units = +(diff - between).toFixed(2);
+  if (units < 0) return {err:`Days already logged since ${shortDate(pm.date)} add up to more than this reading allows.`};
+  return {units, meter:v, pm, first, missing};
+}
+function previewCost(floor, date, u){
+  const g = groupOf(floor), cy = cycleAt(g.id, date); if (!cy || date < cy.rec.anchor_date) return null;
+  let cum = +cy.rec.opening_units || 0;
+  for (let d=cy.rec.anchor_date; d<date; d=addDays(d,1)) g.floors.forEach(f => cum += uOn(f,d));
+  const base = cum + g.floors.filter(f => f !== floor).reduce((a,f) => a + uOn(f,date), 0), after = base + u, th = +S.tariff.threshold;
+  return {cost:bill(after).total - bill(base).total, rate:rateFor(after), after, cross: base <= th && after > th,
+          jump: base <= th && after > th ? bill(after).total - bill(base).total : 0};
+}
+function entryPreview(){
+  const box = $('#ePrev'); if (!box) return;
+  const r = computeEntry(); if (!r){ box.innerHTML = ''; return; }
+  if (r.err){ box.innerHTML = `<div class="err">${r.err}</div>`; return; }
+  const split = r.missing.length && em.split, perDay = split ? r.units/(r.missing.length+1) : r.units;
+  const pc = previewCost(em.floor, em.date, split ? perDay : r.units);
+  let h = `<div class="pv"><div><div class="pv-u">${fmtU(r.units)} <small>units</small></div>
+     ${r.missing.length ? `<div class="muted">since ${shortDate(r.first)} · ${r.missing.length+1} days</div>` : ''}</div>
+     ${pc ? `<div class="pv-c"><div>${rs(pc.cost,2)}</div><div class="muted">slab ${rs(pc.rate,2)}/u · cycle ${fmtU(pc.after)} u</div></div>` : `<div class="pv-c muted" style="font-size:12px">set a cycle<br>to see cost</div>`}</div>`;
+  if (r.missing.length) h += `<label class="chk"><input type="checkbox" ${em.split?'checked':''} onchange="em.split=this.checked;entryPreview()"> Spread across the ${r.missing.length} unlogged day${r.missing.length>1?'s':''} plus this one (${fmtU(r.units/(r.missing.length+1))} u/day). Unticked, all units go to ${shortDate(em.date)}.</label>`;
+  if (pc?.cross) h += `<div class="err">⚠ This entry takes the cycle past ${S.tariff.threshold} units. The whole cycle re-prices to the higher slab table (adds ${rs(pc.jump)}).</div>`;
+  box.innerHTML = h;
+}
+async function upsertEntry(floor, date, f){
+  const ex = idx.get(floor+'|'+date);
+  if (ex){ apply('readings', await DB.update('readings', ex.id, {...f, updated_by_name:user.name})); return; }
+  try { apply('readings', await DB.insert('readings', {floor, reading_date:date, ...f, entered_by_name:user.name, updated_by_name:user.name})); }
+  catch(e){
+    if (e.code !== '23505') throw e;   // someone else saved the same day a moment ago → update theirs
+    await DB.reload(); recompute(); const r = idx.get(floor+'|'+date);
+    apply('readings', await DB.update('readings', r.id, {...f, updated_by_name:user.name}));
+  }
+}
+async function saveEntry(){
+  const r = computeEntry(); if (!r || r.err){ toast(r?.err || 'Enter a value first', 'err'); return; }
+  const note = $('#eNote').value.trim() || null, {floor, date} = em, b = $('#eSave'); b.disabled = true;
+  try {
+    if (r.missing.length && em.split){
+      const n = r.missing.length + 1, per = +(r.units/n).toFixed(2);
+      for (const d of r.missing) await upsertEntry(floor, d, {units:per, meter_reading:null, note:'auto-split'});
+      await upsertEntry(floor, date, {units:+(r.units - per*(n-1)).toFixed(2), meter_reading:r.meter, note});
+    } else await upsertEntry(floor, date, {units:r.units, meter_reading:r.meter, note});
+    if (em.mode !== S.inputMode){ S.inputMode = em.mode; DB.saveSettings(S).catch(()=>{}); }
+    recompute(); closeSheet(); render();
+    const other = FLOORS.find(f => f !== floor);
+    if (date === today() && !idx.has(other+'|'+date)) toast(`${FN[floor]} saved`, 'ok', {label:`Log ${FN[other]} →`, fn:() => openEntry({floor:other})});
+    else toast('Saved', 'ok');
+  } catch(e){ console.error(e); toast('Save failed: ' + (e.message||e), 'err'); b.disabled = false; }
+}
+async function delEntry(id){
+  if (!confirm('Delete this entry?')) return;
+  try { await DB.remove('readings', id); unapply('readings', id); recompute(); closeSheet(); render(); toast('Deleted'); }
+  catch(e){ toast('Delete failed: ' + e.message, 'err'); }
+}
+
+/* ================= CYCLE START / RESET ================= */
+let cyf = null;
+function openCycle(gid){
+  const g = groups().find(x => x.id === gid);
+  cyf = {gid, floors:g.floors, kind:'fresh'};
+  sheet(`<h2>${FN[gid]} · cycle starting point</h2>
+    <div class="seg small"><button id="ckF" class="on" onclick="cycKind('fresh')">EB reading taken — reset to 0</button><button id="ckM" onclick="cycKind('mid')">Joining mid-cycle</button></div>
+    <div id="cycBody"></div>`);
+  renderCycForm();
+}
+function cycKind(k){ cyf.kind = k; $('#ckF').classList.toggle('on', k==='fresh'); $('#ckM').classList.toggle('on', k==='mid'); renderCycForm(); }
+function renderCycForm(){
+  const T = today(), fl = cyf.floors;
+  const lastMeter = f => { const p = prevMeter(f, addDays(T,1)); return p ? p.value : ''; };
+  $('#cycBody').innerHTML = cyf.kind === 'fresh' ? `
+    <div class="info">Use this the day the EB assessor records the meter. The cycle restarts at <b>0 units</b> from that date, and every log from that day on counts toward the new cycle's 500.</div>
+    <label class="fld"><span>Date of EB reading</span><input id="cDate" type="date" value="${T}" max="${T}"></label>
+    ${fl.map(f => `<label class="fld"><span>${FN[f]} meter reading now (optional — needed if you log by meter reading)</span><input id="cM_${f}" type="number" inputmode="decimal" step="0.01" value="${lastMeter(f)}" placeholder="e.g. 12450"></label>`).join('')}
+    <button class="btn pri wide" onclick="saveCycle()">Start new cycle from 0</button>`
+  : `
+    <div class="info">Already partway through a cycle? Enter where it stands today. Your daily logs from the <b>as-of date</b> onward are <b>added on top</b>, and the app projects the full cycle from there.</div>
+    <label class="fld"><span>Cycle began on (last EB reading date)</span><input id="cStart" type="date" value="${addDays(T,-20)}" max="${T}"></label>
+    ${fl.map(f => `<div class="row2"><label class="fld"><span>${FS[f]} reading on EB card</span><input id="cCard_${f}" type="number" inputmode="decimal" step="0.01" placeholder="optional" oninput="cycAuto()"></label>
+       <label class="fld"><span>${FS[f]} meter reading now</span><input id="cM_${f}" type="number" inputmode="decimal" step="0.01" value="${lastMeter(f)}" placeholder="optional" oninput="cycAuto()"></label></div>`).join('')}
+    <label class="fld big"><span>Units consumed so far this cycle${fl.length>1?' (both floors)':''}</span><input id="cOpen" type="number" inputmode="decimal" step="0.01" placeholder="0"></label>
+    <div class="hint" id="cAutoHint">Fill both readings above and this is calculated for you.</div>
+    <label class="fld"><span>As of (logs from this date onward add on top)</span><input id="cAnch" type="date" value="${T}" max="${T}"></label>
+    <button class="btn pri wide" onclick="saveCycle()">Take over this cycle</button>`;
+}
+function cycAuto(){
+  let sum = 0, ok = true;
+  for (const f of cyf.floors){ const a = parseFloat($('#cCard_'+f).value), b = parseFloat($('#cM_'+f).value); if (isNaN(a) || isNaN(b)) { ok = false; break; } sum += b - a; }
+  if (ok && sum >= 0){ $('#cOpen').value = +sum.toFixed(2); $('#cAutoHint').textContent = `Calculated: meter now − EB card reading = ${fmtU(sum)} units.`; }
+}
+async function saveCycle(){
+  const T = today(), ar = {};
+  cyf.floors.forEach(f => { const v = parseFloat($('#cM_'+f).value); if (!isNaN(v)) ar[f] = v; });
+  let rec;
+  if (cyf.kind === 'fresh'){
+    const d = $('#cDate').value; if (!d || d > T) return toast('Pick a valid date', 'err');
+    rec = {group_id:cyf.gid, start_date:d, opening_units:0, anchor_date:d, anchor_readings:ar, note:'EB reading — reset'};
+  } else {
+    const st = $('#cStart').value, an = $('#cAnch').value, op = parseFloat($('#cOpen').value);
+    if (!st || !an) return toast('Fill both dates', 'err');
+    if (st > an) return toast('Cycle start must be on or before the as-of date', 'err');
+    if (isNaN(op) || op < 0) return toast('Enter units consumed so far', 'err');
+    rec = {group_id:cyf.gid, start_date:st, opening_units:op, anchor_date:an, anchor_readings:ar, note:'Joined mid-cycle'};
+    const pre = readings.filter(r => cyf.floors.includes(r.floor) && r.reading_date >= st && r.reading_date < an).length;
+    if (pre && !confirm(`${pre} existing log(s) fall between ${shortDate(st)} and ${shortDate(an)}. They'll be treated as already included in the ${op} units. Continue?`)) return;
+  }
+  try { apply('cycles', await DB.insert('cycles', {...rec, created_by_name:user.name})); recompute(); closeSheet(); render(); toast(`${FN[cyf.gid]} cycle set`, 'ok'); }
+  catch(e){ console.error(e); toast('Could not save: ' + e.message, 'err'); }
+}
+
+/* ================= DAY SHEET ================= */
+function openDay(d){
+  const rows = FLOORS.map(f => {
+    const r = idx.get(f+'|'+d), x = daily[d]?.[f];
+    if (!r) return `<div class="drow empty" style="--c:${FC[f]}"><b style="color:${FC[f]}">${FN[f]}</b><span class="muted">Not logged</span>${d<=today()?`<button class="btn ghost sm" onclick="closeSheet();setTimeout(()=>openEntry({date:'${d}',floor:'${f}'}),260)">Add</button>`:''}</div>`;
+    const edited = r.updated_at && r.created_at && Math.abs(new Date(r.updated_at) - new Date(r.created_at)) > 60000;
+    return `<div class="drow" style="--c:${FC[f]}"><div class="dh"><b>${FN[f]}</b><span>${fmtU(r.units)} u</span></div>
+      <div class="dmeta">${r.meter_reading!=null?`Meter <b>${r.meter_reading}</b> · `:''}${rs(x?.cost||0,2)} · slab ${x?.rate!=null?rs(x.rate,2)+'/u':'—'}${x&&x.cum!=null&&x.counted?` · cycle total ${fmtU(x.cum)} u`:''}${x&&!x.counted&&x.cum!=null?' · <em>covered by carried-in units</em>':''}</div>
+      <div class="dmeta">Logged by ${esc(r.entered_by_name||'?')} · ${fullTime(r.created_at)}${edited?`<br>Edited by ${esc(r.updated_by_name)} · ${fullTime(r.updated_at)}`:''}</div>
+      ${r.note?`<div class="dnote">“${esc(r.note)}”</div>`:''}
+      <div class="dact"><button class="btn ghost sm" onclick="closeSheet();setTimeout(()=>openEntry({date:'${d}',floor:'${f}'}),260)">Edit</button><button class="btn ghost sm danger" onclick="delEntry('${r.id}')">Delete</button></div></div>`;
+  }).join('');
+  const cs = cycles.filter(c => c.start_date === d).map(c => `<div class="info">⚡ ${FN[c.group_id]} cycle started this day${+c.opening_units?` (${fmtU(c.opening_units)} u carried in as of ${shortDate(c.anchor_date)})`:''}.</div>`).join('');
+  sheet(`<h2>${niceDate(d)}</h2>${cs}${rows}`);
+}
+
+/* ================= CALENDAR ================= */
+function renderCal(el){
+  if (!ui.calMonth){ const t = parse(today()); ui.calMonth = new Date(t.getFullYear(), t.getMonth(), 1); }
+  const y = ui.calMonth.getFullYear(), m = ui.calMonth.getMonth(), n = new Date(y,m+1,0).getDate(), lead = (new Date(y,m,1).getDay()+6)%7;
+  const F = ui.calFilter === 'ALL' ? FLOORS : [ui.calFilter], col = FC[ui.calFilter], T = today();
+  const cells = []; let max = 0, tot = 0, cost = 0, logged = 0;
+  for (let i=1; i<=n; i++){
+    const d = iso(new Date(y,m,i)), u = F.reduce((a,f) => a + uOn(f,d), 0), has = F.some(f => idx.has(f+'|'+d));
+    if (has){ max = Math.max(max,u); tot += u; cost += F.reduce((a,f) => a + (daily[d]?.[f]?.cost||0), 0); logged++; }
+    cells.push({d, i, u, has});
+  }
+  const starts = new Set(cycles.filter(c => groups().some(g => g.id === c.group_id)).map(c => c.start_date));
+  const hex = h => [1,3,5].map(k => parseInt(h.slice(k,k+2),16)).join(',');
+  el.innerHTML = `<div class="card">
+    <div class="cal-nav"><button class="icon-btn" onclick="calMove(-1)">${I.left}</button><h2>${MON[m]} ${y}</h2><button class="icon-btn" onclick="calMove(1)">${I.right}</button></div>
+    <div class="chips">${['ALL','GF','FF'].map(k => `<button class="chip-btn ${ui.calFilter===k?'on':''}" style="--c:${FC[k]}" onclick="ui.calFilter='${k}';render()">${k==='ALL'?'Both floors':FN[k]}</button>`).join('')}</div>
+    <div class="mstat">${kv('Units',fmtU(tot))}${kv('Est. cost',rs(cost))}${kv('Avg/day',logged?fmtU(tot/logged):'—')}${kv('Days logged',logged)}</div>
+    <div class="cal-grid">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(w => `<div class="cal-wd">${w}</div>`).join('')}
+      ${'<div></div>'.repeat(lead)}
+      ${cells.map(c => { const a = c.has && max ? .08 + .5*c.u/max : 0;
+        return `<button class="cell ${c.d>T?'fut':''} ${c.d===T?'today':''}" style="${a?`background:rgba(${hex(col)},${a.toFixed(2)});border-color:rgba(${hex(col)},${(a*.9).toFixed(2)})`:''}" onclick="openDay('${c.d}')">
+          <span class="dn">${c.i}</span>${starts.has(c.d)?'<i class="cs">⚡</i>':''}
+          <span class="du">${c.has?fmtU(c.u):''}</span>
+          <span class="dots">${c.d<=T?F.map(f => `<i style="--c:${FC[f]}" class="${idx.has(f+'|'+c.d)?'on':''}"></i>`).join(''):''}</span></button>`; }).join('')}
+    </div>
+    <div class="legend"><span><i style="background:${FC.GF}"></i>Ground floor logged</span><span><i style="background:${FC.FF}"></i>First floor logged</span><span>⚡ cycle start</span><span>Brighter = higher usage</span></div>
+  </div>`;
+}
+function calMove(k){ ui.calMonth = new Date(ui.calMonth.getFullYear(), ui.calMonth.getMonth()+k, 1); render(); }
+
+/* ================= METER / DIAL ================= */
+function renderMeter(el){
+  const gs = groups(); if (!ui.dial || !gs.find(g => g.id === ui.dial)) ui.dial = gs[0].id;
+  const g = gs.find(x => x.id === ui.dial), s = summary(g);
+  let h = gs.length > 1 ? `<div class="chips">${gs.map(x => `<button class="chip-btn ${x.id===ui.dial?'on':''}" style="--c:${FC[x.id]}" onclick="ui.dial='${x.id}';ui.whatIf=null;render()">${FN[x.id]}</button>`).join('')}</div>` : '';
+  if (!s){ el.innerHTML = h + `<div class="card onboard"><div class="ob-ic">${I.flag}</div><div><h3>No cycle yet for ${FN[g.id]}</h3><p>Set a starting point to see the dial.</p><button class="btn pri" onclick="openCycle('${g.id}')">Set starting point</button></div></div>`; return; }
+  const th = s.th, cliff = bill(th+1).total - bill(th).total, G = gauge(s.used, s.avg ? s.projected : 0);
+  const b = ui.bd === 'proj' ? s.billProj : s.billNow, bu = ui.bd === 'proj' ? s.projected : s.used;
+  const wiMax = Math.max(1200, Math.ceil(s.projected*1.3/100)*100), wi = ui.whatIf ?? Math.round(s.used), wb = bill(wi);
+  h += `<div class="card gauge-card">${G.svg}
+    <div class="zones">${G.zones}</div>
+    <div class="gchips">
+      ${kv('Slab rate now', rs(rateFor(s.used),2)+'/u', s.used>th?'higher table':'≤'+th+' table')}
+      ${kv(s.used<=th?'Units to the cliff':'Past the cliff by', fmtU(Math.abs(th-s.used)), s.used<=th?`cliff at ${th}`:'units')}
+      ${kv('Unit #'+(th+1)+' costs', rs(cliff), 'whole cycle re-prices')}
+      ${kv('Projected end', s.avg?fmtU(s.projected)+' u':'—', s.avg?`≈ ${rs(s.billProj.total+s.fixed)}`:'log more days')}
+    </div></div>
+  <div class="card"><div class="sec-t" style="margin-top:0"><h2>Slab breakdown</h2></div>
+    <div class="seg small"><button class="${ui.bd==='now'?'on':''}" onclick="ui.bd='now';render()">So far · ${fmtU(s.used)} u</button><button class="${ui.bd==='proj'?'on':''}" onclick="ui.bd='proj';render()">Projected · ${fmtU(s.projected)} u</button></div>
+    <div class="plan ${b.high?'high':'low'}">${b.high?`Above ${th} units — higher table applies to the whole cycle (fewer free units, steeper slabs).`:`Within ${th} units — concessional table applies.`}</div>
+    ${slabTable(b, bu, s.fixed)}
+    ${s.opening?`<div class="fine">Includes ${fmtU(s.opening)} units carried in when tracking started on ${shortDate(s.r.anchor_date)}.</div>`:''}
+  </div>
+  <div class="card"><div class="sec-t" style="margin-top:0"><h2>What if?</h2><span class="muted" style="font-size:12px">drag to test a cycle total</span></div>
+    <input type="range" min="0" max="${wiMax}" step="1" value="${wi}" oninput="ui.whatIf=+this.value;wiUpd()">
+    <div class="wi"><div><span class="num" id="wiU">${wi}</span> <span class="muted">units</span></div><div><span class="num" id="wiB" style="color:var(--amber)">${rs(wb.total)}</span></div></div>
+    <div class="muted" id="wiN" style="font-size:12.5px;margin-top:4px">${wiNote(wi)}</div></div>`;
+  el.innerHTML = h;
+  requestAnimationFrame(() => requestAnimationFrame(() => { document.querySelectorAll('.needle').forEach(n => n.style.transform = `rotate(${n.dataset.a}deg)`); }));
+}
+function wiNote(u){ const s = summary(groups().find(x => x.id === ui.dial)), b = bill(u), d = b.total - s.billNow.total;
+  return `${b.high?'Higher table':'Concessional table'} · avg ${u?rs(b.total/u,2):'₹0'}/u · ${d>=0?'+':''}${rs(d)} vs now`; }
+function wiUpd(){ const u = ui.whatIf; $('#wiU').textContent = u; $('#wiB').textContent = rs(bill(u).total); $('#wiN').textContent = wiNote(u); }
+function slabTable(b, u, fixed){
+  let tot = 0;
+  const rows = b.parts.map((p,i) => { tot += p.cost;
+    const label = `${p.from===0?0:p.from+1}–${isFinite(p.to)?p.to:'∞'}`, active = u > p.from && (u <= p.to || !isFinite(p.to));
+    return `<tr class="${p.units?'':'dim'} ${active?'hl':''}"><td><span class="sw" style="background:${ZC[i%ZC.length]}"></span>${label}</td><td>${p.rate?rs(p.rate,2):'Free'}</td><td>${fmtU(p.units)}</td><td>${rs(p.cost,2)}</td></tr>`; }).join('');
+  return `<table class="tbl"><thead><tr><th>Slab (units)</th><th>Rate</th><th>Units</th><th>Cost</th></tr></thead><tbody>${rows}
+    ${fixed?`<tr><td>Fixed charge</td><td></td><td></td><td>${rs(fixed,2)}</td></tr>`:''}
+    <tr class="tot"><td>Total</td><td>${u?rs((tot)/u,2)+'/u':''}</td><td>${fmtU(u)}</td><td>${rs(tot+fixed,2)}</td></tr></tbody></table>`;
+}
+function gauge(used, proj){
+  const t = S.tariff, th = +t.threshold;
+  const lowB = t.low.map(topOf).filter(x => isFinite(x) && x < th), highB = t.high.map(topOf).filter(x => isFinite(x) && x > th);
+  const lastB = highB.length ? highB[highB.length-1] : th;
+  let max = Math.ceil(lastB*1.2/100)*100; const need = Math.max(used, proj)*1.08; if (need > max) max = Math.ceil(need/100)*100;
+  const B = [...new Set([0, ...lowB, th, ...highB, max])].sort((a,b) => a-b);
+  const A0 = -125, A1 = 125, ang = v => A0 + Math.min(1, Math.max(0, v/max))*(A1-A0);
+  const cx = 170, cy = 170, R = 130, P = (r,a) => { const q = a*Math.PI/180; return [cx + r*Math.sin(q), cy - r*Math.cos(q)]; };
+  const arc = (r,a,b) => { const [x1,y1] = P(r,a), [x2,y2] = P(r,b); return `M${x1.toFixed(1)} ${y1.toFixed(1)}A${r} ${r} 0 ${b-a>180?1:0} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`; };
+  let zones = '', ticks = '', labels = '', chips = '';
+  for (let i=0; i<B.length-1; i++){
+    const c = ZC[i%ZC.length], lit = used > B[i];
+    zones += `<path d="${arc(R, ang(B[i])+.7, ang(B[i+1])-.7)}" stroke="${c}" stroke-width="16" fill="none" opacity="${lit?.95:.32}" ${lit?'filter="url(#gl)"':''}/>`;
+    const last = i === B.length-2 && B[i+1] === max && highB.length && max > lastB;
+    chips += `<span class="zc"><i style="background:${c}"></i>${last?B[i]+'+':(B[i]?B[i]+1:0)+'–'+B[i+1]} · ${rateFor(last?B[i]+1:B[i+1]) ? rs(rateFor(last?B[i]+1:B[i+1]),2) : 'free'}</span>`;
+  }
+  for (let v=0; v<=max; v+=50){ const major = v%100 === 0, [x1,y1] = P(R-14,ang(v)), [x2,y2] = P(R-(major?24:19),ang(v));
+    ticks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="rgba(230,234,246,${major?.38:.16})" stroke-width="${major?1.6:1}"/>`; }
+  B.forEach(v => { const [x,y] = P(R-38, ang(v)); labels += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" class="gl ${v===th?'th':''}">${v}</text>`; });
+  const [c1x,c1y] = P(R+13, ang(th)), [c2x,c2y] = P(R-12, ang(th)), [clx,cly] = P(R+24, ang(th));
+  const nd = (a, cls, ghost) => `<g class="needle ${cls}" data-a="${a.toFixed(2)}" style="transform:rotate(${A0}deg)">${ghost
+      ? `<line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy-R+20}" stroke="#e6eaf6" stroke-width="2" stroke-dasharray="3 4" opacity=".45"/>`
+      : `<path d="M${cx-5} ${cy+12} L${cx} ${cy-R+16} L${cx+5} ${cy+12} Z" fill="url(#ng)" filter="url(#gl2)"/>`}</g>`;
+  const st = used > th ? '#ff7189' : proj > th ? '#f2c27a' : '#8fe3b0';
+  return { zones:chips, svg:`<svg viewBox="0 0 340 300" role="img" aria-label="Units dial">
+    <defs><filter id="gl" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="gl2"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <linearGradient id="ng" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#c4b2ff"/><stop offset="1" stop-color="#f2a0d8"/></linearGradient></defs>
+    <path d="${arc(R, A0, A1)}" stroke="rgba(255,255,255,.04)" stroke-width="30" fill="none"/>
+    ${zones}${ticks}${labels}
+    <line x1="${c1x.toFixed(1)}" y1="${c1y.toFixed(1)}" x2="${c2x.toFixed(1)}" y2="${c2y.toFixed(1)}" stroke="#ff7189" stroke-width="3" filter="url(#gl2)"/>
+    <text x="${clx.toFixed(1)}" y="${cly.toFixed(1)}" text-anchor="middle" class="gl th" style="font-size:9.5px;letter-spacing:1px">CLIFF</text>
+    ${proj ? nd(ang(proj),'ghost',true) : ''}${nd(ang(used),'main',false)}
+    <circle cx="${cx}" cy="${cy}" r="13" fill="#141a32" stroke="rgba(196,178,255,.6)" stroke-width="2"/><circle cx="${cx}" cy="${cy}" r="4" fill="#f2a0d8"/>
+    <text x="${cx}" y="246" text-anchor="middle" style="font-family:var(--num);font-size:38px;font-weight:700;fill:${st}" filter="url(#gl2)">${fmtU(used)}</text>
+    <text x="${cx}" y="270" text-anchor="middle" style="font-size:12px;fill:#8a93b2">units this cycle · ${rs(bill(used).total)}</text>
+    ${proj?`<text x="${cx}" y="289" text-anchor="middle" style="font-size:11px;fill:#5b6383">dashed needle = projected ${fmtU(proj)}</text>`:''}
+  </svg>`};
+}
+
+/* ================= STATS & REPORTS ================= */
+function rangeDates(){
+  const T = today(); let from;
+  if (ui.statRange === 'cycle'){ const s = summary(groups()[0]); from = s ? s.r.anchor_date : addDays(T,-29); }
+  else from = addDays(T, -(+ui.statRange) + 1);
+  const out = []; for (let d=from; d<=T; d=addDays(d,1)) out.push(d); return out;
+}
+function aggregate(dates){
+  const A = {GF:{sum:0,n:0,cost:0}, FF:{sum:0,n:0,cost:0}, both:{sum:0,n:0}, cost:0, days:[], dow:Array.from({length:7}, () => ({GF:0,gn:0,FF:0,fn:0,t:0,tn:0}))};
+  for (const d of dates){
+    const g = idx.get('GF|'+d), f = idx.get('FF|'+d), gu = g ? +g.units : 0, fu = f ? +f.units : 0;
+    const gc = daily[d]?.GF?.cost || 0, fc = daily[d]?.FF?.cost || 0, w = parse(d).getDay();
+    if (g){ A.GF.sum += gu; A.GF.n++; A.GF.cost += gc; A.dow[w].GF += gu; A.dow[w].gn++; }
+    if (f){ A.FF.sum += fu; A.FF.n++; A.FF.cost += fc; A.dow[w].FF += fu; A.dow[w].fn++; }
+    if (g && f){ A.both.sum += gu+fu; A.both.n++; A.dow[w].t += gu+fu; A.dow[w].tn++; }
+    A.cost += gc + fc;
+    A.days.push({d, gu, fu, g:!!g, f:!!f, both:!!(g&&f), cost:gc+fc});
+  }
+  const full = A.days.filter(x => x.both);
+  A.peak = full.reduce((m,x) => !m || x.gu+x.fu > m.gu+m.fu ? x : m, null);
+  A.low = full.reduce((m,x) => !m || x.gu+x.fu < m.gu+m.fu ? x : m, null);
+  A.avg = A.both.n ? A.both.sum/A.both.n : (A.GF.n ? A.GF.sum/A.GF.n : 0) + (A.FF.n ? A.FF.sum/A.FF.n : 0);
+  const we = full.filter(x => [0,6].includes(parse(x.d).getDay())), wd = full.filter(x => ![0,6].includes(parse(x.d).getDay()));
+  const av = a => a.length ? a.reduce((s,x) => s+x.gu+x.fu, 0)/a.length : 0;
+  A.weAvg = av(we); A.wdAvg = av(wd);
+  const h = Math.floor(full.length/2); A.trend = full.length >= 6 && av(full.slice(0,h)) ? (av(full.slice(h)) - av(full.slice(0,h))) / av(full.slice(0,h)) * 100 : null;
+  const dw = A.dow.map((x,i) => ({i, v: x.tn ? x.t/x.tn : null})).filter(x => x.v != null);
+  A.topDow = dw.reduce((m,x) => !m || x.v > m.v ? x : m, null); A.lowDow = dw.reduce((m,x) => !m || x.v < m.v ? x : m, null);
+  return A;
+}
+function streak(){ let n = 0, d = today(); if (!(idx.has('GF|'+d) && idx.has('FF|'+d))) d = addDays(d,-1);
+  while (idx.has('GF|'+d) && idx.has('FF|'+d)){ n++; d = addDays(d,-1); } return n; }
+function insights(A){
+  const out = [], tot = A.GF.sum + A.FF.sum;
+  if (A.topDow) out.push(`Heaviest day: <b>${DOWL[A.topDow.i]}</b> at ${fmtU(A.topDow.v)} u on average${A.avg?` (${A.topDow.v>=A.avg?'+':''}${Math.round((A.topDow.v/A.avg-1)*100)}% vs your daily average)`:''}.`);
+  if (A.lowDow && A.topDow && A.lowDow.i !== A.topDow.i) out.push(`Lightest day: <b>${DOWL[A.lowDow.i]}</b> at ${fmtU(A.lowDow.v)} u.`);
+  if (A.weAvg && A.wdAvg) out.push(`Weekends run <b>${Math.abs(Math.round((A.weAvg/A.wdAvg-1)*100))}% ${A.weAvg>=A.wdAvg?'higher':'lower'}</b> than weekdays (${fmtU(A.weAvg)} vs ${fmtU(A.wdAvg)} u/day).`);
+  if (tot) out.push(`Ground floor uses <b>${Math.round(A.GF.sum/tot*100)}%</b> of the house total; first floor <b>${Math.round(A.FF.sum/tot*100)}%</b>.`);
+  if (A.trend != null) out.push(`Recent half of this period is <b>${Math.abs(Math.round(A.trend))}% ${A.trend>=0?'higher':'lower'}</b> than the earlier half.`);
+  return out;
+}
+function renderStats(el){
+  const dates = rangeDates(), A = aggregate(dates), logPct = dates.length ? Math.round((A.GF.n + A.FF.n)/(dates.length*2)*100) : 0;
+  const ins = insights(A), P = period(ui.rep.type, ui.rep.offset), RA = aggregate(P.dates);
+  el.innerHTML = `<div class="chips">${[['7','7 days'],['14','14 days'],['30','30 days'],['90','90 days'],['cycle','This cycle']].map(([k,l]) => `<button class="chip-btn ${ui.statRange===k?'on':''}" onclick="ui.statRange='${k}';render()">${l}</button>`).join('')}</div>
+  <div class="kgrid" style="margin-bottom:14px">
+    ${kv('Avg / day (house)', fmtU(A.avg), 'units')}${kv('Total units', fmtU(A.GF.sum+A.FF.sum), `${rs(A.cost)} est. cost`)}
+    ${kv(`<span style="color:${FC.GF}">GF</span> avg / day`, A.GF.n?fmtU(A.GF.sum/A.GF.n):'—', `${A.GF.n} days logged`)}${kv(`<span style="color:${FC.FF}">FF</span> avg / day`, A.FF.n?fmtU(A.FF.sum/A.FF.n):'—', `${A.FF.n} days logged`)}
+    ${kv('Peak day', A.peak?fmtU(A.peak.gu+A.peak.fu):'—', A.peak?niceDate(A.peak.d):'')}${kv('Lowest day', A.low?fmtU(A.low.gu+A.low.fu):'—', A.low?niceDate(A.low.d):'')}
+    ${kv('Logging streak', streak()+' d', 'both floors')}${kv('Completeness', logPct+'%', 'floor-days logged')}
+  </div>
+  ${ins.length?`<div class="card"><h3 style="margin-bottom:10px">Patterns</h3><div class="ins">${ins.map(x => `<div>${x}</div>`).join('')}</div></div>`:''}
+  <div class="card"><h3 style="margin-bottom:10px">Daily consumption</h3><div class="chart-box"><canvas id="chD"></canvas></div></div>
+  <div class="card"><h3 style="margin-bottom:10px">By day of week (avg units)</h3><div class="chart-box sm"><canvas id="chW"></canvas></div></div>
+  <div class="card"><h3 style="margin-bottom:10px">Floor split</h3><div class="chart-box sm"><canvas id="chS"></canvas></div></div>
+  <div class="sec-t"><h2>Reports</h2></div>
+  <div class="card">
+    <div class="seg small">${[['week','Weekly'],['fortnight','Fortnightly'],['month','Monthly'],['cycle','Cycle']].map(([k,l]) => `<button class="${ui.rep.type===k?'on':''}" onclick="ui.rep={type:'${k}',offset:0};render()">${l}</button>`).join('')}</div>
+    <div class="cal-nav"><button class="icon-btn" onclick="ui.rep.offset--;render()">${I.left}</button><div style="text-align:center"><b>${P.label}</b><div class="muted" style="font-size:12px">${shortDate(P.from)} – ${shortDate(P.to)}</div></div><button class="icon-btn" ${ui.rep.offset>=0?'disabled style="opacity:.3"':''} onclick="ui.rep.offset++;render()">${I.right}</button></div>
+    <div class="row2" style="margin-bottom:12px">${kv('Units', fmtU(RA.GF.sum+RA.FF.sum), `GF ${fmtU(RA.GF.sum)} · FF ${fmtU(RA.FF.sum)}`)}${kv('Est. cost', rs(RA.cost), `${RA.both.n} full days logged`)}</div>
+    <button class="btn pri wide" onclick="openReport()">${I.doc} Open full report</button>
+  </div>`;
+  drawCharts(A);
+}
+function drawCharts(A){
+  if (!window.Chart) return;
+  Chart.defaults.color = '#8a93b2'; Chart.defaults.font.family = 'Outfit'; Chart.defaults.borderColor = 'rgba(150,165,255,.08)';
+  const lab = A.days.map(x => { const d = parse(x.d); return `${d.getDate()} ${MON[d.getMonth()]}`; });
+  const tip = {backgroundColor:'#1a2140', borderColor:'rgba(150,165,255,.2)', borderWidth:1, padding:10};
+  charts.push(new Chart($('#chD'), {type:'bar', data:{labels:lab, datasets:[
+      {label:'Ground', data:A.days.map(x => x.g?x.gu:null), backgroundColor:'rgba(94,230,235,.55)', borderColor:FC.GF, borderWidth:1, borderRadius:4, stack:'s'},
+      {label:'First', data:A.days.map(x => x.f?x.fu:null), backgroundColor:'rgba(242,138,208,.5)', borderColor:FC.FF, borderWidth:1, borderRadius:4, stack:'s'}]},
+    options:{maintainAspectRatio:false, plugins:{legend:{labels:{boxWidth:10}}, tooltip:tip}, scales:{x:{stacked:true, ticks:{maxTicksLimit:8, maxRotation:0}, grid:{display:false}}, y:{stacked:true, beginAtZero:true}}}}));
+  const order = [1,2,3,4,5,6,0];
+  charts.push(new Chart($('#chW'), {type:'bar', data:{labels:order.map(i => DOW[i]), datasets:[
+      {label:'Ground', data:order.map(i => A.dow[i].gn ? +(A.dow[i].GF/A.dow[i].gn).toFixed(2) : 0), backgroundColor:'rgba(94,230,235,.55)', borderRadius:6},
+      {label:'First', data:order.map(i => A.dow[i].fn ? +(A.dow[i].FF/A.dow[i].fn).toFixed(2) : 0), backgroundColor:'rgba(242,138,208,.5)', borderRadius:6}]},
+    options:{maintainAspectRatio:false, plugins:{legend:{labels:{boxWidth:10}}, tooltip:tip}, scales:{x:{grid:{display:false}}, y:{beginAtZero:true}}}}));
+  charts.push(new Chart($('#chS'), {type:'doughnut', data:{labels:['Ground floor','First floor'], datasets:[{data:[+A.GF.sum.toFixed(1), +A.FF.sum.toFixed(1)], backgroundColor:['rgba(94,230,235,.7)','rgba(242,138,208,.65)'], borderColor:'#131a30', borderWidth:3, hoverOffset:6}]},
+    options:{maintainAspectRatio:false, cutout:'68%', plugins:{legend:{position:'right', labels:{boxWidth:10}}, tooltip:tip}}}));
+}
+function period(type, off){
+  const T = today(), t = parse(T); let from, to, label;
+  if (type === 'week'){ const d = new Date(t); d.setDate(d.getDate() - (d.getDay()+6)%7 + off*7); from = iso(d); to = addDays(from,6); label = off===0 ? 'This week' : off===-1 ? 'Last week' : `Week of ${shortDate(from)}`; }
+  else if (type === 'fortnight'){
+    const k = t.getFullYear()*24 + t.getMonth()*2 + (t.getDate()<=15?0:1) + off, y = Math.floor(k/24), r = ((k%24)+24)%24, m = Math.floor(r/2), half = r%2;
+    from = iso(new Date(y, m, half?16:1)); to = half ? iso(new Date(y, m+1, 0)) : iso(new Date(y, m, 15));
+    label = `${half?'2nd':'1st'} half · ${MON[m]} ${y}`;
+  }
+  else if (type === 'month'){ const d = new Date(t.getFullYear(), t.getMonth()+off, 1); from = iso(d); to = iso(new Date(d.getFullYear(), d.getMonth()+1, 0)); label = `${MON[d.getMonth()]} ${d.getFullYear()}`; }
+  else { const g = groups()[0], cs = cyclesOf(g.id), cur = cycleAt(g.id, T);
+    let i = cur ? cs.findIndex(c => c.id === cur.rec.id) + off : -1;
+    if (i < 0 || !cs[i]){ from = addDays(T,-59); to = T; label = 'No cycle recorded'; }
+    else { from = cs[i].start_date; to = cs[i+1] ? addDays(cs[i+1].start_date,-1) : addDays(from, S.cycleDays-1); label = `${FN[g.id]} cycle${off===0?' (current)':''}`; } }
+  const dates = []; for (let d=from; d<=to && d<=T; d=addDays(d,1)) dates.push(d);
+  return {from, to, label, dates};
+}
+function openReport(){
+  const P = period(ui.rep.type, ui.rep.offset), A = aggregate(P.dates), title = {week:'Weekly',fortnight:'Fortnightly',month:'Monthly',cycle:'Billing-cycle'}[ui.rep.type];
+  const row = (n,c,o) => `<tr><td><span class="sw" style="background:${c}"></span>${n}</td><td>${fmtU(o.sum)}</td><td>${o.n?fmtU(o.sum/o.n):'—'}</td><td>${rs(o.cost)}</td><td>${o.n}/${P.dates.length}</td></tr>`;
+  const html = `<div id="report" class="report">
+    <div class="rp-head"><div class="logo">${I.bolt}</div><div><h3>EB Tracker · ${title} report</h3><div class="muted" style="font-size:12.5px">${P.label} · ${niceDate(P.from)} – ${niceDate(P.to)}</div></div></div>
+    <table class="tbl"><thead><tr><th>Floor</th><th>Units</th><th>Avg/day</th><th>Est. cost</th><th>Logged</th></tr></thead><tbody>
+      ${row('Ground floor',FC.GF,A.GF)}${row('First floor',FC.FF,A.FF)}
+      <tr class="tot"><td>Total</td><td>${fmtU(A.GF.sum+A.FF.sum)}</td><td>${fmtU(A.avg)}</td><td>${rs(A.cost)}</td><td></td></tr></tbody></table>
+    <h5>Highlights</h5><ul>
+      ${A.peak?`<li>Peak day: ${niceDate(A.peak.d)} — ${fmtU(A.peak.gu+A.peak.fu)} units</li>`:''}
+      ${A.low?`<li>Lowest day: ${niceDate(A.low.d)} — ${fmtU(A.low.gu+A.low.fu)} units</li>`:''}
+      ${insights(A).map(x => `<li>${x}</li>`).join('')}
+      ${groups().map(g => { const s = summary(g); return s ? `<li>${FN[g.id]} cycle to date: ${fmtU(s.used)} of ${s.th} units, projected ${fmtU(s.projected)} (${STAT[s.status].label.toLowerCase()})</li>` : ''; }).join('')}
+    </ul>
+    <h5>Daily log</h5>
+    <table class="tbl"><thead><tr><th>Date</th><th>GF</th><th>FF</th><th>Total</th><th>Cost</th></tr></thead><tbody>
+      ${A.days.map(x => `<tr class="${x.g||x.f?'':'dim'}"><td>${niceDate(x.d)}</td><td>${x.g?fmtU(x.gu):'–'}</td><td>${x.f?fmtU(x.fu):'–'}</td><td>${x.g||x.f?fmtU(x.gu+x.fu):'–'}</td><td>${x.g||x.f?rs(x.cost,2):'–'}</td></tr>`).join('')}
+    </tbody></table>
+    <div class="fine">Costs are energy charges allocated day by day at the slab each day's units fell into within the billing cycle (TN domestic tariff as configured; fixed charges excluded). Generated ${fullTime(new Date().toISOString())} by ${esc(user.name)}.</div></div>
+    <div class="rbtns"><button class="btn" onclick="window.print()">${I.print} PDF</button><button class="btn" onclick="repCSV()">${I.dl} CSV</button><button class="btn" onclick="repShare()">${I.share} Share</button></div>`;
+  window._rep = {P, A, title};
+  sheet(html, 'full');
+}
+function repCSV(){
+  const {P, A} = window._rep;
+  const lines = ['Date,Ground floor units,First floor units,Total units,Est. cost (INR)', ...A.days.map(x => `${x.d},${x.g?x.gu:''},${x.f?x.fu:''},${x.g||x.f?+(x.gu+x.fu).toFixed(2):''},${x.g||x.f?x.cost.toFixed(2):''}`)];
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lines.join('\n')], {type:'text/csv'})); a.download = `eb-report-${P.from}-to-${P.to}.csv`; a.click();
+}
+async function repShare(){
+  const {P, A, title} = window._rep;
+  const txt = `⚡ EB ${title} report — ${P.label} (${shortDate(P.from)}–${shortDate(P.to)})\nGround floor: ${fmtU(A.GF.sum)} u · ${rs(A.GF.cost)}\nFirst floor: ${fmtU(A.FF.sum)} u · ${rs(A.FF.cost)}\nTotal: ${fmtU(A.GF.sum+A.FF.sum)} u · ${rs(A.cost)}\nAvg/day: ${fmtU(A.avg)} u${A.peak?`\nPeak: ${niceDate(A.peak.d)} (${fmtU(A.peak.gu+A.peak.fu)} u)`:''}`;
+  try { if (navigator.share) await navigator.share({text:txt}); else { await navigator.clipboard.writeText(txt); toast('Summary copied', 'ok'); } } catch(e){}
+}
+
+/* ================= SETTINGS ================= */
+function openSettings(){
+  const t = S.tariff, trows = (k) => t[k].map((s,i) => `<div class="trow"><input data-t="${k}" data-f="upto" data-i="${i}" type="number" placeholder="∞" value="${s.upto??''}"><input data-t="${k}" data-f="rate" data-i="${i}" type="number" step="0.01" value="${s.rate}"><button class="rm" onclick="tEdit('${k}',${i},-1)">×</button></div>`).join('');
+  const hist = groups().map(g => cyclesOf(g.id).slice().reverse().map(c => `<div class="hist"><div><b style="color:${FC[g.id]}">${FN[g.id]}</b> · from ${shortDate(c.start_date)}${+c.opening_units?` · ${fmtU(c.opening_units)} u carried in (as of ${shortDate(c.anchor_date)})`:''}<small>${esc(c.note||'')} · set by ${esc(c.created_by_name)} · ${fullTime(c.created_at)}</small></div><button class="btn ghost sm danger" onclick="delCycle('${c.id}')">Undo</button></div>`).join('')).join('') || '<div class="muted" style="font-size:13px">No cycles recorded yet.</div>';
+  sheet(`<h2>Settings</h2>
+    <h4>You</h4>
+    <label class="fld"><span>Display name (shown on your entries)</span><input id="sName" value="${esc(user.name)}"></label>
+    <h4>Billing setup</h4>
+    <div class="seg small"><button id="mSep" class="${S.mode==='separate'?'on':''}" onclick="sMode('separate')">Separate meter per floor</button><button id="mCom" class="${S.mode==='combined'?'on':''}" onclick="sMode('combined')">One combined meter</button></div>
+    <div class="hint">Separate: each floor has its own 500-unit limit and bill. Combined: the 500 limit applies to both floors together.</div>
+    <div class="row2"><label class="fld"><span>Cycle length (days)</span><input id="sDays" type="number" value="${S.cycleDays}"></label>
+      <label class="fld"><span>Default input</span><select id="sInput"><option value="meter" ${S.inputMode==='meter'?'selected':''}>Meter reading</option><option value="units" ${S.inputMode==='units'?'selected':''}>Units used</option></select></label></div>
+    <div class="row2">${['GF','FF','ALL'].map(k => `<label class="fld" data-fx="${k}"><span>Fixed charge / cycle · ${FS[k]==='ALL'?'combined':FS[k]} (₹)</span><input id="sFix_${k}" type="number" step="0.01" value="${S.fixedCharge[k]||0}"></label>`).join('')}</div>
+    <h4>Cycles</h4>
+    <div class="cyc-actions" style="margin:0 0 10px">${groups().map(g => `<button class="btn ghost sm" onclick="closeSheet();setTimeout(()=>openCycle('${g.id}'),260)">${I.reset} New / reset ${FN[g.id]}</button>`).join('')}</div>
+    ${hist}
+    <h4>Tariff</h4>
+    <label class="fld"><span>Threshold (units per cycle)</span><input id="sTh" type="number" value="${t.threshold}"></label>
+    <div class="muted" style="font-size:12.5px;margin-bottom:6px">Up to threshold — “Up to” units · ₹ per unit</div><div id="tLow">${trows('low')}</div>
+    <button class="btn ghost sm" onclick="tEdit('low',0,1)">+ slab</button>
+    <div class="muted" style="font-size:12.5px;margin:14px 0 6px">Above threshold (blank “Up to” = no upper limit)</div><div id="tHigh">${trows('high')}</div>
+    <button class="btn ghost sm" onclick="tEdit('high',0,1)">+ slab</button>
+    <div class="cyc-actions"><button class="btn ghost sm" onclick="S.tariff=clone(TN2026);closeSheet();setTimeout(openSettings,260)">Reset to TN 2026 tariff</button></div>
+    <button class="btn pri wide" style="margin-top:18px" onclick="saveSettings()">Save settings</button>
+    ${DEMO ? `<button class="btn ghost wide danger" onclick="if(confirm('Reset demo data?')){localStorage.removeItem(DEMO_KEY);location.reload()}">Reset demo data</button>`
+           : `<button class="btn ghost wide" onclick="client.auth.signOut()">Sign out (${esc(user.email)})</button>`}`);
+  sMode(S.mode, true);
+}
+let pendingMode = null;
+function sMode(m, init){ pendingMode = m; $('#mSep').classList.toggle('on', m==='separate'); $('#mCom').classList.toggle('on', m==='combined');
+  document.querySelectorAll('[data-fx]').forEach(e => e.style.display = (m==='combined') === (e.dataset.fx==='ALL') ? '' : 'none'); }
+function readTariff(){
+  const t = clone(S.tariff);
+  document.querySelectorAll('[data-t]').forEach(inp => { const r = t[inp.dataset.t][+inp.dataset.i]; if (!r) return;
+    r[inp.dataset.f] = inp.dataset.f === 'upto' ? (inp.value === '' ? null : +inp.value) : +inp.value; });
+  t.threshold = +$('#sTh').value || 500; return t;
+}
+function tEdit(k, i, op){ S.tariff = readTariff(); if (op < 0) S.tariff[k].splice(i,1); else S.tariff[k].push({upto:null, rate:0});
+  const body = $('#sheetRoot .sheet'), y = body.scrollTop; closeSheet(); setTimeout(() => { openSettings(); $('#sheetRoot .sheet').scrollTop = y; }, 260); }
+async function saveSettings(){
+  const t = readTariff();
+  for (const k of ['low','high']){ const ups = t[k].map(topOf); if (ups.some((u,i) => i && u <= ups[i-1])) return toast(`Tariff "${k==='low'?'up to threshold':'above threshold'}" slabs must increase`, 'err'); }
+  const name = $('#sName').value.trim() || user.name;
+  const next = {...S, mode:pendingMode||S.mode, cycleDays:Math.max(1, +$('#sDays').value || 60), inputMode:$('#sInput').value, tariff:t,
+    fixedCharge:{GF:+$('#sFix_GF').value||0, FF:+$('#sFix_FF').value||0, ALL:+$('#sFix_ALL').value||0}};
+  try {
+    await DB.saveSettings(next); S = next;
+    if (name !== user.name){ user.name = name; if (DEMO){ demo.name = name; saveDemo(); } else await client.auth.updateUser({data:{name}}); }
+    recompute(); closeSheet(); shell(); render(); toast('Settings saved', 'ok');
+  } catch(e){ toast('Save failed: ' + e.message, 'err'); }
+}
+async function delCycle(id){
+  if (!confirm('Remove this cycle starting point? Logs stay; they will be priced under the previous cycle.')) return;
+  try { await DB.remove('cycles', id); unapply('cycles', id); recompute(); closeSheet(); render(); toast('Cycle removed'); }
+  catch(e){ toast('Failed: ' + e.message, 'err'); }
+}
+
+/* ================= sheet & toast ================= */
+function sheet(html, cls=''){
+  const root = $('#sheetRoot');
+  root.innerHTML = `<div class="backdrop" onclick="closeSheet()"></div><div class="sheet ${cls}"><div class="grab"></div><button class="x" onclick="closeSheet()">${I.x}</button>${html}</div>`;
+  requestAnimationFrame(() => requestAnimationFrame(() => root.classList.add('open'))); document.body.style.overflow = 'hidden';
+}
+function closeSheet(){ const root = $('#sheetRoot'); root.classList.remove('open'); document.body.style.overflow = '';
+  setTimeout(() => { if (!root.classList.contains('open')) root.innerHTML = ''; }, 260); }
+function toast(msg, kind='', act){
+  const t = document.createElement('div'); t.className = 'tst ' + kind; t.innerHTML = `<span>${esc(msg)}</span>`;
+  if (act){ const b = document.createElement('button'); b.textContent = act.label; b.onclick = () => { t.remove(); act.fn(); }; t.appendChild(b); }
+  $('#toast').appendChild(t); setTimeout(() => t.remove(), act ? 6500 : 3200);
+}
+
+boot();
+</script>
+</body>
+</html>
