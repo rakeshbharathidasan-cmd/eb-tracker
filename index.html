@@ -295,7 +295,50 @@ input[type=range]{width:100%;accent-color:#a78bfa;margin:10px 0}
 .wi .b{display:flex;flex-direction:column;gap:5px;align-items:flex-end}
 .wi .b button{font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;background:var(--card2);border:1px solid var(--line2)}
 .wtx{width:100%;min-height:84px;padding:12px 14px;border-radius:12px;background:rgba(9,12,22,.6);border:1px solid var(--line2);color:var(--text);font:inherit;resize:vertical;outline:none}
+
+/* ===== v4 · Aurora Pulse standard ===== */
+body{background:var(--bg)}
+body::before{content:"";position:fixed;inset:-25%;z-index:-1;pointer-events:none;background:radial-gradient(34% 26% at 8% 10%,color-mix(in srgb,var(--vio) 30%,transparent),transparent 70%),radial-gradient(30% 24% at 95% 28%,color-mix(in srgb,var(--cy,#2ec5ff) 16%,transparent),transparent 70%),radial-gradient(32% 26% at 30% 92%,color-mix(in srgb,var(--pk,#ff4fa3) 13%,transparent),transparent 70%);animation:aur 20s ease-in-out infinite alternate}
+@keyframes aur{to{transform:translate(-5%,4%) rotate(4deg) scale(1.06)}}
+header.top{background:linear-gradient(var(--bg) 65%,transparent)}
+.ttl h1{background:linear-gradient(90deg,var(--cy,#2ec5ff),var(--vio),var(--pk,#ff4fa3),var(--cy,#2ec5ff));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shim 6s linear infinite}
+@keyframes shim{to{background-position:300% 0}}
+.logo{position:relative}
+.logo::after{content:"";position:absolute;inset:-4px;border-radius:16px;border:2px solid #f2c27a;opacity:0;animation:sonar 3.6s ease-out infinite}
+@keyframes sonar{0%{transform:scale(.9);opacity:.7}100%{transform:scale(1.5);opacity:0}}
+.card{background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),var(--card);border-color:color-mix(in srgb,var(--vio) 22%,transparent)}
+.btn.pri{background:var(--grad);color:#fff;position:relative;overflow:hidden}
+.btn.pri::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);transform:translateX(-120%);animation:sheen 3.4s ease-in-out infinite;pointer-events:none}
+@keyframes sheen{60%,100%{transform:translateX(120%)}}
+.btn.armed{background:var(--red);color:#fff;border-color:var(--red)}
+.fab{background:var(--grad);color:#fff;animation:fabg 3s ease-in-out infinite}
+@keyframes fabg{50%{box-shadow:0 0 0 5px var(--bg),0 0 34px 4px color-mix(in srgb,var(--vio) 70%,transparent)}}
+.tab.act svg.i{color:var(--cy,#2ec5ff);filter:drop-shadow(0 0 7px color-mix(in srgb,var(--cy,#2ec5ff) 80%,transparent));transform:translateY(-2px) scale(1.12)}
+.tab svg.i{transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.ftile{animation:pop .5s cubic-bezier(.3,1.6,.5,1) both}.ftile:nth-child(2){animation-delay:.07s}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+#sheetRoot .sheet{background:linear-gradient(180deg,color-mix(in srgb,var(--vio) 12%,var(--bg2)),var(--bg2))}
+nav.tabs{background:color-mix(in srgb,var(--bg) 90%,transparent)!important}
+.hdr-btns{display:flex;gap:6px}
+.thg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:6px 0 4px}
+.thg button{border-radius:13px;padding:9px 6px 7px;border:1px solid var(--line2);font-size:11.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:5px}
+.thg button.on{box-shadow:0 0 0 2px var(--cy,#2ec5ff)}
+.thg .sw2{display:flex;gap:3px}.thg .sw2 i{width:13px;height:13px;border-radius:50%;display:block}
+.lrow{padding:9px 0;border-bottom:1px solid var(--line)}
+.lrow .t{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;font-weight:600}
+.lrow .c{display:grid;grid-template-columns:46px minmax(0,1fr) 40px;gap:8px;align-items:center;margin-top:7px}.lrow .c.c2{grid-template-columns:minmax(0,1fr) 40px}
+.lrow input[type=color]{width:46px;height:32px;padding:2px;border-radius:9px;border:1px solid var(--line2);background:var(--card2)}
+.lrow input[type=range]{width:100%;accent-color:var(--cy,#2ec5ff)}
+.lrow small{color:var(--muted);text-align:right}
+.sws{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.sws button{width:28px;height:28px;border-radius:50%;background:var(--c);border:3px solid transparent}.sws button.on{border-color:#fff}
+.shp{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.shp button{font-size:11.5px;font-weight:700;padding:5px 9px;border-radius:8px;background:var(--card2);border:1px solid var(--line2);color:var(--muted)}
+.shp button.on{background:var(--grad);color:#fff;border-color:transparent}.shp button i{display:inline-block;width:15px;height:10px;border:2px solid currentColor;margin-right:5px;vertical-align:-1px}
+.lkprev{position:sticky;top:-10px;z-index:3;padding:6px 0 10px;background:linear-gradient(180deg,var(--bg2) 88%,transparent)}
+.peekbtn{display:block;width:100%;margin:2px 0 6px;padding:9px;border-radius:12px;background:var(--card2);border:1px dashed var(--vio);font-weight:700;font-size:13px}
+body.peek #sheetRoot .sheet{transform:translateY(calc(100% - 46px))!important;transition:transform .3s ease!important}
+body.peek #sheetRoot .backdrop{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 </style>
+<style id="lookCss"></style><style id="btnCss"></style>
 </head>
 <body>
 <div id="app"></div>
@@ -578,7 +621,7 @@ function shell(){
   $('#app').innerHTML = `<div class="app">
   <header class="top"><div class="logo">${I.bolt}</div>
     <div class="ttl"><h1>EB Tracker</h1><div class="sub"><span class="dot ${ui.live?'on':''}" id="liveDot"></span><span>${DEMO?'Demo mode':'Live'} · ${esc(user.name)}</span></div></div>
-    <div class="hdr-btns"><button class="icon-btn" onclick="openWish()" aria-label="App wishlist">${I.doc}<span class="bd" id="wishBd" ${wishTodo()?'':'hidden'}>${wishTodo()}</span></button>
+    <div class="hdr-btns"><button class="icon-btn" onclick="themeNext()" aria-label="Change theme"><svg class="i" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.3A4.7 4.7 0 0 0 21 9.7C21 6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10" cy="7" r="1.2"/><circle cx="14.5" cy="7" r="1.2"/></svg></button><button class="icon-btn" onclick="openWish()" aria-label="App wishlist">${I.doc}<span class="bd" id="wishBd" ${wishTodo()?'':'hidden'}>${wishTodo()}</span></button>
     <button class="icon-btn" onclick="openSettings()" aria-label="Settings">${I.gear}</button></div></header>
   ${DEMO?`<div class="demo-banner">Demo mode — sample data on this device only. Add your Supabase keys in index.html to go live.</div>`:''}
   <main id="page"></main></div>
@@ -1085,6 +1128,8 @@ function openSettings(){
   sheet(`<h2>Settings</h2>
     <h4>You</h4>
     <label class="fld"><span>Display name (shown on your entries)</span><input id="sName" value="${esc(user.name)}"></label>
+    <h4>Look</h4>
+    <button class="btn ghost wide" style="margin-top:0" onclick="closeSheet();setTimeout(openLook,260)">🎨 Theme, tile colours, see-through & shapes</button>
     <h4>App wishlist</h4>
     <button class="btn ghost wide" style="margin-top:0" onclick="closeSheet();setTimeout(openWish,260)">${I.doc} App wishlist${wishTodo()?' · '+wishTodo()+' to do':''}</button>
     <h4>Billing setup</h4>
@@ -1147,6 +1192,7 @@ function snd(k){ try { AC = AC || new (window.AudioContext||window.webkitAudioCo
   else if (k === 'save') { tone(520, 0, .18, 'sine', .06, 1040); tone(1560, .12, .2, 'sine', .035); }
   else if (k === 'zap') { tone(140, 0, .25, 'sawtooth', .04, 60); tone(1800, .02, .08, 'square', .02); }
   else if (k === 'del') { tone(300, 0, .22, 'sawtooth', .04, 80); }
+  else if (k === 'theme') [392, 523, 659, 784].forEach((f, i) => tone(f, i * .06, .4, 'triangle', .045));
   else tone(1200, 0, .05, 'sine', .03);
 } catch(e){} }
 
@@ -1253,7 +1299,7 @@ async function setPaid(id){
 }
 
 /* ================= v3 · app wishlist (this phone) ================= */
-const WKEY = 'ebt-wish', WSCR = ['Home','Calendar','Meter','Stats','Log entry','Other'], WST = {todo:['To do','#5ee6eb'], sent:['Sent','#f2c27a'], done:['Done','#8fe3b0']};
+const WKEY = 'ebt-wish', WSCR = ['Home','Calendar','Meter','Stats','Log entry','Look','Other'], WST = {todo:['To do','#5ee6eb'], sent:['Sent','#f2c27a'], done:['Done','#8fe3b0']};
 let WISH = []; try { WISH = JSON.parse(localStorage.getItem(WKEY) || '[]'); } catch(e){ WISH = []; }
 const saveWish = () => { try { localStorage.setItem(WKEY, JSON.stringify(WISH)); } catch(e){} const b = $('#wishBd'); if (b){ const n = wishTodo(); b.hidden = !n; b.textContent = n; } };
 const wishTodo = () => WISH.filter(w => w.st === 'todo').length;
@@ -1288,6 +1334,92 @@ function wishText(){ const l = WISH.filter(w => w.st === 'todo').sort((a,b) => a
   return `EB Tracker update wishlist (${sd(Date.now())}):\n` + l.map((w, i) => `${i+1}. [${w.scr}] ${w.text} (${sd(w.t)})`).join('\n'); }
 async function wCopy(){ const txt = wishText(); let ok = true; try { await navigator.clipboard.writeText(txt); } catch(e){ ok = false; const t = $('#wText'); t.value = txt; t.select(); }
   snd('tag'); toast(ok ? 'Copied · paste it to Claude' : 'Text is in the box · copy it', 'ok', {label:'Mark sent', fn:() => { WISH.forEach(w => { if (w.st === 'todo'){ w.st = 'sent'; w.sentAt = Date.now(); } }); saveWish(); if ($('#wText')) wReopen(); }}); }
+
+/* ================= v4 · Aurora Pulse standard: themes, tile & button looks, shapes, live demo + Peek (this phone) ================= */
+const LOOKKEY = 'ebt-look';
+const THEMES = {
+  aurora: {n:'Aurora Pulse',  v:['#07081a','#10122b','#171a3a','#262b58','#353b72','#f1f2ff','#a3a8d6','#646a9e','#2ec5ff','#7c5cff','#ff4fa3']},
+  titan:  {n:'Titan Forge',   v:['#0d0b09','#1a1612','#241e18','#3a3026','#4d3f31','#f2e8dc','#b3a28e','#6e604f','#ffc24a','#ff6a1a','#d6452b']},
+  emerald:{n:'Emerald',       v:['#06110d','#0d1f18','#132a21','#1f4436','#2a5a47','#e3f7ee','#93bfa9','#55806b','#7cf2c0','#12b878','#c8f05a']},
+  ice:    {n:'Ice Steel',     v:['#080d12','#111a23','#18232f','#2a3a4c','#384c62','#e6f1fb','#9ab0c5','#5d7488','#bfe6ff','#4aa3e8','#8a9bb0']},
+  blood:  {n:'Blood Moon',    v:['#120607','#220c0f','#2e1115','#4d1c22','#66262e','#fbe7e8','#c79a9e','#7f5559','#ff8a5c','#c8102e','#ff2f6d']},
+  gold:   {n:'Midnight Gold', v:['#07070c','#121219','#1a1a24','#2e2c3d','#3d3a50','#f5efe0','#b5ab92','#6f6852','#f3dc8f','#c9a227','#8f6bd8']},
+};
+const THK = Object.keys(THEMES), FC0 = {...FC};
+const LBTNS = [['pri','Main buttons (Save…)','.btn.pri'],['btn','Other buttons','.btn:not(.pri)'],['chip','Selected chips & tabs','.chip-btn.on, .seg button.on'],['fab','＋ Log button','.fab'],['icon','Top icons','.icon-btn']];
+const SHAPES = [['', 'Default', '6px'], ['round', 'Rounded', '6px'], ['soft', 'Soft', '9px'], ['pill', 'Pill', '99px'], ['square', 'Square', '2px'], ['sharp', 'Sharp', '0'], ['leaf', 'Leaf', '8px 1px 8px 1px']];
+const SHR = {round:'14px', soft:'26px', pill:'999px', square:'6px', sharp:'0', leaf:'22px 4px 22px 4px'};
+const SWX = ['#5ee6eb','#f28ad0','#a78bfa','#2ec5ff','#7c5cff','#ff4fa3','#ffb020','#1fd68a','#e8364a','#f59f00','#3d63e0','#8fe3b0'];
+let LOOK = null; try { LOOK = JSON.parse(localStorage.getItem(LOOKKEY) || 'null'); } catch(e){ LOOK = null; }
+const look = () => { if (!LOOK) LOOK = {theme:'aurora', fc:{}, tp:100, ts:'', card:'', cp:100, cs:'', btn:{}}; LOOK.btn = LOOK.btn || {}; LOOK.fc = LOOK.fc || {}; return LOOK; };
+const saveLook = () => { try { localStorage.setItem(LOOKKEY, JSON.stringify(LOOK)); } catch(e){} };
+const lightOf = hex => { const h = String(hex || '').replace('#', ''); if (h.length < 6) return 0; const [r, g, b] = [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)/255); return .2126*r + .7152*g + .0722*b; };
+function applyLook(){
+  const L = look(), t = THEMES[L.theme] || THEMES.aurora, [bg, s1, s2, ln, ln2, tx, mu, fa, cy, vi, pk] = t.v, r = document.documentElement.style;
+  Object.entries({'--bg':bg,'--bg2':s1,'--card':`color-mix(in srgb,${s1} 86%,transparent)`,'--card2':`color-mix(in srgb,${s2} 92%,transparent)`,'--line':ln,'--line2':ln2,'--text':tx,'--muted':mu,'--dim':fa,'--cy':cy,'--vio':vi,'--pk':pk,'--grad':`linear-gradient(135deg,${pk},${vi} 50%,${cy})`}).forEach(([k, v]) => r.setProperty(k, v));
+  ['GF','FF'].forEach(k => { FC[k] = L.fc[k] || FC0[k]; r.setProperty('--' + k.toLowerCase(), FC[k]); });
+  const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = bg;
+  let c = '';
+  if (L.tp < 100) c += `.ftile{background:linear-gradient(150deg,color-mix(in srgb,var(--c) ${Math.round(L.tp * .35)}%,transparent),color-mix(in srgb,var(--bg2) ${L.tp}%,transparent))!important;backdrop-filter:blur(6px)}`;
+  if (L.ts && SHR[L.ts]) c += `.ftile,.kv,.fi{border-radius:${SHR[L.ts]}!important}`;
+  if (L.card || L.cp < 100) c += `.card{background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),color-mix(in srgb,${L.card || 'var(--bg2)'} ${L.cp}%,transparent)!important;backdrop-filter:blur(6px)}`;
+  if (L.cs && SHR[L.cs]) c += `.card{border-radius:${SHR[L.cs]}!important}`;
+  $('#lookCss').textContent = c;
+  let b = '';
+  LBTNS.forEach(([k, , sel]) => { const o = L.btn[k]; if (!o) return; const a = o.a ?? 100, p = [];
+    if (o.c) p.push(`background:color-mix(in srgb,${o.c} ${a}%,transparent)!important`, `border-color:color-mix(in srgb,${o.c} 60%,transparent)!important`);
+    else if (a < 100) p.push(`background:color-mix(in srgb,var(--card2) ${a}%,transparent)!important`);
+    if (o.s && SHR[o.s] && k !== 'fab') p.push(`border-radius:${SHR[o.s]}!important`);
+    if (p.length) b += `${sel}{${p.join(';')}}`;
+    if (o.c && a >= 50 && lightOf(o.c) > .55) b += sel.split(',').map(x => `${x.trim()},${x.trim()} *`).join(',') + '{color:#10131a!important}'; });
+  $('#btnCss').textContent = b;
+}
+function lkSave(redraw){ saveLook(); applyLook(); if (redraw) openLook(); }
+function openLook(){
+  const L = look(), shp = (k, cur, fn) => `<div class="shp">${SHAPES.map(([v, l, rr]) => `<button class="${(cur || '') === v ? 'on' : ''}" onclick="${fn}('${k}','${v}')"><i style="border-radius:${rr}"></i>${l}</button>`).join('')}</div>`;
+  const brow = ([k, name]) => { const o = L.btn[k] || {}; return `<div class="lrow"><div class="t"><span>${name}</span><button class="btn ghost sm" onclick="lkBr('${k}')">Reset</button></div>
+    <div class="c"><input type="color" data-lk="bc:${k}" value="${o.c || '#7c5cff'}"><input type="range" min="10" max="100" step="5" data-lk="ba:${k}" value="${o.a ?? 100}"><small>${o.a ?? 100}%</small></div>${k === 'fab' ? '' : shp(k, o.s, 'lkBShape')}</div>`; };
+  const fcRow = k => `<div class="lrow"><div class="t"><span style="color:${FC[k]}">${FN[k]} tile colour</span><input type="color" data-lk="fc:${k}" value="${FC[k]}"></div>
+    <div class="sws">${SWX.map(c => `<button class="${FC[k].toLowerCase() === c ? 'on' : ''}" style="--c:${c}" onclick="lkFc('${k}','${c}')"></button>`).join('')}</div></div>`;
+  const y = $('#sheetRoot .sheet')?.scrollTop || 0;
+  sheet(`<h2>🎨 Theme & look</h2>
+    <div class="lkprev"><div class="muted" style="font-size:11.5px;margin-bottom:6px">LIVE DEMO · changes show here as you tap</div>
+      <div class="ftiles" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">${['GF','FF'].map(f => `<div class="ftile" style="--c:${FC[f]}"><div class="fname">${FN[f]}</div><div class="num" style="font-size:22px;font-weight:700;margin-top:4px">12.4 u</div><div class="muted" style="font-size:12px">₹58 today</div></div>`).join('')}</div>
+      <div class="card" style="margin:0 0 8px;padding:10px 12px"><div style="display:flex;justify-content:space-between"><span class="muted">Card · this cycle</span><b class="num">₹1,240</b></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn pri" style="pointer-events:none">Save</button><button class="btn" style="pointer-events:none">Cancel</button></div></div>
+    <button class="peekbtn" onclick="lkPeek()">👁 Peek at the real screen (3 sec)</button>
+    <h4>Theme</h4><div class="thg">${THK.map(k => { const t = THEMES[k]; return `<button class="${L.theme === k ? 'on' : ''}" style="background:${t.v[1]};color:${t.v[5]}" onclick="lkTheme('${k}')"><span class="sw2">${[t.v[8], t.v[9], t.v[10]].map(c => `<i style="background:${c}"></i>`).join('')}</span>${t.n}</button>`; }).join('')}</div>
+    <h4>Floor tiles</h4>${fcRow('GF')}${fcRow('FF')}
+    <div class="lrow"><div class="t"><span>Tile see-through</span></div><div class="c c2"><input type="range" min="20" max="100" step="5" data-lk="tp" value="${L.tp}"><small>${L.tp}%</small></div></div>
+    <div class="lrow"><div class="t"><span>Tile shape</span></div>${shp('ts', L.ts, 'lkShape')}</div>
+    <h4>Cards</h4>
+    <div class="lrow"><div class="t"><span>Card colour</span><span style="display:flex;gap:8px;align-items:center"><input type="color" data-lk="card" value="${L.card || (THEMES[L.theme] || THEMES.aurora).v[1]}"><button class="btn ghost sm" onclick="look().card='';lkSave(true)">Theme</button></span></div></div>
+    <div class="lrow"><div class="t"><span>Card see-through</span></div><div class="c c2"><input type="range" min="20" max="100" step="5" data-lk="cp" value="${L.cp}"><small>${L.cp}%</small></div></div>
+    <div class="lrow"><div class="t"><span>Card shape</span></div>${shp('cs', L.cs, 'lkShape')}</div>
+    <h4>Buttons · colour, see-through, shape</h4>
+    <div class="muted" style="font-size:12.5px">Shape for all buttons</div>${shp('all', '', 'lkAll')}
+    ${LBTNS.map(brow).join('')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px"><button class="btn ghost danger" onclick="lkReset(this)">Reset all looks</button><button class="btn pri" onclick="closeSheet()">Done</button></div>
+    <div class="muted" style="font-size:11.5px;margin-top:10px">Saved on this phone only, so Shalini can pick her own look. 100% = solid.</div>`);
+  requestAnimationFrame(() => { const s = $('#sheetRoot .sheet'); if (s) s.scrollTop = y; });
+}
+function lkTheme(k){ const L = look(); L.theme = k; L.card = ''; snd('theme'); lkSave(true); render(); }
+function lkFc(k, c){ look().fc[k] = c; snd('tick'); lkSave(true); render(); }
+function lkShape(k, v){ look()[k] = v; snd('tick'); lkSave(true); }
+function lkBShape(k, v){ const L = look(); L.btn[k] = L.btn[k] || {}; L.btn[k].s = v; snd('tick'); lkSave(true); }
+function lkAll(_, v){ const L = look(); LBTNS.forEach(([k]) => { L.btn[k] = L.btn[k] || {}; L.btn[k].s = v; }); snd('tick'); lkSave(true); }
+function lkBr(k){ delete look().btn[k]; snd('del'); lkSave(true); }
+function lkReset(el){ if (!el.classList.contains('armed')) { el.classList.add('armed'); el.textContent = 'Tap again to confirm'; setTimeout(() => { if (el.isConnected) { el.classList.remove('armed'); el.textContent = 'Reset all looks'; } }, 3000); return; }
+  LOOK = null; snd('del'); lkSave(true); render(); toast('Look reset', 'ok'); }
+function lkPeek(){ snd('tick'); document.body.classList.add('peek'); setTimeout(() => document.body.classList.remove('peek'), 3000); }
+function themeNext(){ const L = look(), i = THK.indexOf(L.theme); L.theme = THK[(i + 1) % THK.length]; L.card = ''; snd('theme'); lkSave(false); render(); toast(`🎨 ${THEMES[L.theme].n}`, 'ok'); }
+document.addEventListener('input', e => { const el = e.target; if (!el.dataset || !el.dataset.lk) return;
+  const L = look(), k = el.dataset.lk, v = el.value, lab = el.nextElementSibling && el.nextElementSibling.tagName === 'SMALL' ? el.nextElementSibling : null;
+  if (k === 'card') L.card = v; else if (k === 'tp' || k === 'cp') L[k] = +v;
+  else { const [t, id] = k.split(':'); if (t === 'fc') { L.fc[id] = v; } else { L.btn[id] = L.btn[id] || {}; if (t === 'bc') L.btn[id].c = v; else L.btn[id].a = +v; } }
+  if (lab) lab.textContent = v + '%';
+  saveLook(); applyLook(); if (k.startsWith('fc:')) { clearTimeout(window._fcT); window._fcT = setTimeout(render, 250); } });
+applyLook();
 
 /* ================= sheet & toast ================= */
 function sheet(html, cls=''){
